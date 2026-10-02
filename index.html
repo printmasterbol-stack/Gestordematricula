@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestão Escolar · EEB Antônio Pinheiro de Freitas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --primary:#1e3a8a;--primary-light:#2563eb;--primary-dark:#1e40af;
+  --accent:#0891b2;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --bg:#f1f5f9;--surface:#ffffff;--surface-2:#f8fafc;
+  --border:#e2e8f0;--border-strong:#cbd5e1;
+  --text:#0f172a;--text-muted:#64748b;--text-subtle:#94a3b8;
+  --shadow:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 20px 40px rgba(15,23,42,.12);
+  --radius:12px;--radius-lg:16px;--radius-sm:8px;
+  --sidebar-w:260px;
+  --gradient:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);
+  --gradient-accent:linear-gradient(135deg,#0891b2 0%,#06b6d4 100%);
+  --gradient-server:linear-gradient(135deg,#059669 0%,#10b981 100%);
+}
+[data-theme="dark"]{
+  --bg:#0b1220;--surface:#111827;--surface-2:#1f2937;
+  --border:#1f2937;--border-strong:#374151;
+  --text:#f1f5f9;--text-muted:#94a3b8;--text-subtle:#64748b;
+  --shadow:0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg:0 20px 40px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+
+/* TELA DE LOGIN */
+.login-screen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#0891b2 100%);
+  position:relative;
+  overflow:hidden;
+}
+.login-screen::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,.08) 0%, transparent 50%);
+  pointer-events:none;
+}
+.login-container{
+  background:var(--surface);
+  border-radius:20px;
+  box-shadow:0 25px 60px rgba(0,0,0,.3);
+  width:100%;
+  max-width:440px;
+  padding:40px 36px;
+  position:relative;
+  z-index:1;
+  animation:loginSlide .5s cubic-bezier(.4,0,.2,1);
+}
+@keyframes loginSlide{
+  from{opacity:0;transform:translateY(20px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.login-logo-wrap{
+  text-align:center;
+  margin-bottom:24px;
+  position:relative;
+}
+.login-brasao{
+  width:140px;
+  height:140px;
+  margin:0 auto 16px;
+  border-radius:20px;
+  background:var(--surface-2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border:4px solid var(--primary);
+  box-shadow:0 8px 24px rgba(30,58,138,.2);
+  position:relative;
+}
+.login-brasao img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.login-brasao svg{
+  width:80px;
+  height:80px;
+  color:var(--primary);
+}
+.login-brasao-upload{
+  position:absolute;
+  bottom:4px;
+  right:4px;
+  width:32px;
+  height:32px;
+  background:var(--primary);
+  color:white;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  z-index:10;
+}
+.login-brasao-upload:hover{background:var(--primary-light);transform:scale(1.1)}
+.login-brasao-upload svg{width:16px;height:16px}
+.login-brasao-upload input{display:none}
+.login-school-name{
+  font-size:15px;
+  font-weight:800;
+  color:var(--primary);
+  line-height:1.3;
+  margin-bottom:4px;
+}
+.login-school-sub{
+  font-size:12px;
+  color:var(--text-muted);
+  font-weight:500;
+}
+.login-title{
+  text-align:center;
+  font-size:20px;
+  font-weight:700;
+  color:var(--text);
+  margin-bottom:4px;
+}
+.login-subtitle{
+  text-align:center;
+  font-size:13px;
+  color:var(--text-muted);
+  margin-bottom:28px;
+}
+.login-field{
+  margin-bottom:16px;
+}
+.login-field label{
+  display:block;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:6px;
+}
+.login-input-wrap{
+  position:relative;
+}
+.login-input-wrap svg{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  width:18px;
+  height:18px;
+  color:var(--text-subtle);
+  pointer-events:none;
+}
+.login-input{
+  width:100%;
+  height:44px;
+  padding:0 14px 0 40px;
+  background:var(--surface-2);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  font-size:14px;
+  color:var(--text);
+  transition:all .2s;
+}
+.login-input:focus{
+  outline:none;
+  border-color:var(--primary-light);
+  background:var(--surface);
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+.login-input::placeholder{color:var(--text-subtle)}
+.login-options{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+  font-size:12.5px;
+}
+.login-remember{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--text-muted);
+  cursor:pointer;
+}
+.login-remember input{
+  width:16px;
+  height:16px;
+  accent-color:var(--primary-light);
+}
+.login-forgot{
+  color:var(--primary-light);
+  font-weight:600;
+  cursor:pointer;
+  transition:color .15s;
+}
+.login-forgot:hover{color:var(--primary-dark);text-decoration:underline}
+.login-btn{
+  width:100%;
+  height:46px;
+  background:var(--gradient);
+  color:white;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:all .2s;
+  box-shadow:0 4px 14px rgba(30,58,138,.3);
+  border:none;
+  cursor:pointer;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,58,138,.4)}
+.login-btn:active{transform:translateY(0)}
+.login-btn svg{width:18px;height:18px}
+.login-error{
+  background:rgba(239,68,68,.08);
+  border:1px solid rgba(239,68,68,.2);
+  color:var(--danger);
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:12.5px;
+  margin-bottom:16px;
+  display:none;
+  align-items:center;
+  gap:8px;
+}
+.login-error.show{display:flex}
+.login-error svg{width:16px;height:16px;flex-shrink:0}
+.login-footer{
+  text-align:center;
+  margin-top:20px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+  font-size:11px;
+  color:var(--text-subtle);
+}
+
+/* HOME */
+.home-screen{min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.home-header{padding:24px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.home-header-left{display:flex;align-items:center;gap:16px}
+.home-logo{width:48px;height:48px;border-radius:12px;background:var(--gradient);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:22px;box-shadow:0 4px 12px rgba(30,58,138,.3)}
+.home-header-left h1{font-size:20px;font-weight:700;color:var(--text)}
+.home-header-left p{font-size:13px;color:var(--text-muted);margin-top:2px}
+.home-header-right{display:flex;align-items:center;gap:12px}
+.home-user-info{display:flex;align-items:center;gap:10px;padding:6px 12px;background:var(--surface-2);border-radius:10px}
+.home-user-info .user-name{font-size:13px;font-weight:600}
+.home-user-info .user-role{font-size:11px;color:var(--text-muted)}
+.home-btn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s;border:1px solid var(--border)}
+.home-btn:hover{background:var(--surface-2);color:var(--text)}
+.home-btn svg{width:20px;height:20px}
+.home-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.home-welcome{text-align:center;margin-bottom:48px}
+.home-welcome h2{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;color:var(--text)}
+.home-welcome p{font-size:15px;color:var(--text-muted);max-width:500px;margin:0 auto}
+.home-panels-title{font-size:22px;font-weight:700;margin-bottom:24px;color:var(--text);align-self:flex-start;max-width:900px;width:100%;margin-left:auto;margin-right:auto;padding-left:4px}
+.home-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;max-width:900px;width:100%}
+.home-panel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden}
+.home-panel-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;transition:height .25s}
+.home-panel-card.matriculas::before{background:var(--gradient)}
+.home-panel-card.servidores::before{background:var(--gradient-server)}
+.home-panel-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:transparent}
+.home-panel-card:hover::before{height:6px}
+.home-panel-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:white}
+.home-panel-card.matriculas .home-panel-icon{background:var(--gradient);box-shadow:0 4px 14px rgba(30,58,138,.3)}
+.home-panel-card.servidores .home-panel-icon{background:var(--gradient-server);box-shadow:0 4px 14px rgba(5,150,105,.3)}
+.home-panel-icon svg{width:28px;height:28px}
+.home-panel-card h3{font-size:20px;font-weight:700;color:var(--text)}
+.home-panel-card p{font-size:14px;color:var(--text-muted);line-height:1.5;flex:1}
+.home-panel-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:16px;border-top:1px solid var(--border)}
+.home-panel-tag{font-size:12px;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+.home-panel-tag svg{width:14px;height:14px}
+.home-panel-arrow{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.home-panel-card.matriculas .home-panel-arrow{background:rgba(30,58,138,.08);color:var(--primary-light)}
+.home-panel-card.servidores .home-panel-arrow{background:rgba(5,150,105,.08);color:#059669}
+.home-panel-card:hover .home-panel-arrow{transform:translateX(4px)}
+.home-panel-arrow svg{width:18px;height:18px}
+.home-footer{padding:20px 32px;text-align:center;font-size:12px;color:var(--text-subtle);border-top:1px solid var(--border);background:var(--surface)}
+
+.system-screen{display:none;min-height:100vh}
+.system-screen.active{display:flex}
+.home-screen.hidden{display:none}
+
+.app{display:flex;min-height:100vh;width:100%}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;min-height:64px}
+.back-btn{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s;border:1px solid var(--border);flex-shrink:0}
+.back-btn:hover{background:var(--surface-2);color:var(--text)}
+.back-btn svg{width:18px;height:18px}
+.sidebar-logo{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px;flex-shrink:0}
+.sidebar-logo.matriculas{background:var(--gradient);box-shadow:0 4px 12px rgba(30,58,138,.3)}
+.sidebar-logo.servidores{background:var(--gradient-server);box-shadow:0 4px 12px rgba(5,150,105,.3)}
+.sidebar-title h1{font-size:13px;font-weight:700;line-height:1.2}
+.sidebar-title p{font-size:10px;color:var(--text-muted);font-weight:500}
+.sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+.nav-section{margin-bottom:16px}
+.nav-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-subtle);padding:0 12px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text-muted);font-weight:500;font-size:13px;cursor:pointer;transition:all .15s;margin-bottom:2px}
+.nav-item:hover{background:var(--surface-2);color:var(--text)}
+.nav-item.active{background:var(--gradient);color:white;box-shadow:0 4px 12px rgba(30,58,138,.25)}
+.nav-item.active svg{stroke:white}
+.nav-item.server-active{background:var(--gradient-server);color:white;box-shadow:0 4px 12px rgba(5,150,105,.25)}
+.nav-item.server-active svg{stroke:white}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.nav-item .label{flex:1}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:12px;flex-shrink:0}
+.user-info h4{font-size:12px;font-weight:600}
+.user-info p{font-size:10px;color:var(--text-muted)}
+
+.main{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-width:0}
+.topbar{height:64px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:50}
+.btn-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s}
+.btn-icon:hover{background:var(--surface-2);color:var(--text)}
+.btn-icon svg{width:18px;height:18px}
+.topbar-search{flex:1;max-width:420px;position:relative}
+.topbar-search input{width:100%;height:38px;padding:0 14px 0 38px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text);transition:all .15s}
+.topbar-search input:focus{outline:none;border-color:var(--primary-light);background:var(--surface);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.topbar-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-subtle)}
+.topbar-search .shortcut{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:var(--text-subtle);background:var(--surface);border:1px solid var(--border);padding:2px 5px;border-radius:4px}
+.topbar-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
+
+.content{flex:1;padding:24px;max-width:1600px;width:100%;margin:0 auto}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.page-title h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.page-title p{color:var(--text-muted);font-size:13px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--gradient);color:white;box-shadow:0 2px 8px rgba(30,58,138,.25)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,138,.35)}
+.btn-server{background:var(--gradient-server);color:white;box-shadow:0 2px 8px rgba(5,150,105,.25)}
+.btn-server:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(5,150,105,.35)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface-2);border-color:var(--border-strong)}
+.btn-ghost{color:var(--text-muted)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text)}
+.btn-danger{background:var(--danger);color:white}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.btn-sm svg{width:13px;height:13px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all .2s}
+.card:hover{box-shadow:var(--shadow)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;transition:all .2s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient)}
+.kpi-card.accent::before{background:var(--gradient-accent)}
+.kpi-card.success::before{background:linear-gradient(135deg,#10b981,#34d399)}
+.kpi-card.warning::before{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+.kpi-card.server::before{background:var(--gradient-server)}
+.kpi-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.kpi-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.1);color:var(--primary-light)}
+.kpi-card.accent .kpi-icon{background:rgba(8,145,178,.1);color:var(--accent)}
+.kpi-card.success .kpi-icon{background:rgba(16,185,129,.1);color:var(--success)}
+.kpi-card.warning .kpi-icon{background:rgba(245,158,11,.1);color:var(--warning)}
+.kpi-card.server .kpi-icon{background:rgba(5,150,105,.1);color:#059669}
+.kpi-icon svg{width:20px;height:20px}
+.kpi-value{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1;margin-bottom:4px}
+.kpi-label{font-size:12.5px;color:var(--text-muted);font-weight:500}
+
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:1024px){.charts-grid{grid-template-columns:1fr}}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px}
+.card-title{font-size:14.5px;font-weight:700}
+.card-subtitle{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+.chart-container{position:relative;height:260px}
+
+.class-selector-banner{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.class-selector-banner .banner-icon{width:52px;height:52px;border-radius:14px;background:var(--gradient);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.class-selector-banner.server .banner-icon{background:var(--gradient-server)}
+.class-selector-banner .banner-icon svg{width:26px;height:26px}
+.class-selector-banner .banner-info{flex:1;min-width:180px}
+.class-selector-banner .banner-info h3{font-size:17px;font-weight:700;margin-bottom:2px}
+.class-selector-banner .banner-info p{font-size:12.5px;color:var(--text-muted)}
+.class-selector-banner .banner-stats{display:flex;gap:20px;flex-wrap:wrap}
+.banner-stat{text-align:center}
+.banner-stat-value{font-size:20px;font-weight:800;color:var(--text);line-height:1}
+.banner-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.class-select-wrapper{position:relative}
+.class-select-wrapper select{height:42px;padding:0 38px 0 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;min-width:260px;appearance:none}
+.class-select-wrapper select:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.class-select-wrapper::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--text-muted);pointer-events:none}
+
+.table-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.table-toolbar{padding:14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.table-search{flex:1;min-width:180px;position:relative}
+.table-search input{width:100%;height:36px;padding:0 10px 0 34px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;font-size:12.5px}
+.table-search input:focus{outline:none;border-color:var(--primary-light);background:var(--surface)}
+.table-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-subtle)}
+.filter-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;font-size:11.5px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.filter-chip:hover{border-color:var(--primary-light);color:var(--primary-light)}
+.filter-chip.active{background:var(--primary-light);color:white;border-color:var(--primary-light)}
+.filter-chip.server-active{background:#059669;color:white;border-color:#059669}
+.filter-chip svg{width:13px;height:13px}
+
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead{background:var(--surface-2)}
+th{padding:11px 14px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:none}
+.person-cell{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:12px;flex-shrink:0}
+.person-info{min-width:0}
+.person-name{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:5px;font-size:10.5px;font-weight:600}
+.badge svg{width:9px;height:9px}
+.badge-success{background:rgba(16,185,129,.1);color:var(--success)}
+.badge-warning{background:rgba(245,158,11,.1);color:var(--warning)}
+.badge-info{background:rgba(8,145,178,.1);color:var(--accent)}
+.badge-neutral{background:var(--surface-2);color:var(--text-muted)}
+.badge-server{background:rgba(5,150,105,.1);color:#059669}
+
+.row-actions{display:flex;gap:3px;opacity:.5;transition:opacity .15s}
+tr:hover .row-actions{opacity:1}
+.row-actions button{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s}
+.row-actions button:hover{background:var(--surface-2);color:var(--text)}
+.row-actions button.danger:hover{background:rgba(239,68,68,.1);color:var(--danger)}
+.row-actions svg{width:13px;height:13px}
+
+.table-footer{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);flex-wrap:wrap;gap:10px}
+.pagination{display:flex;gap:3px;align-items:center}
+.pagination button{min-width:30px;height:30px;padding:0 7px;border-radius:6px;font-size:12px;font-weight:500;color:var(--text-muted);transition:all .15s}
+.pagination button:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
+.pagination button.active{background:var(--gradient);color:white}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+
+.empty-state{padding:50px 20px;text-align:center}
+.empty-icon{width:68px;height:68px;margin:0 auto 14px;background:var(--surface-2);border-radius:18px;display:flex;align-items:center;justify-content:center;color:var(--text-subtle)}
+.empty-icon svg{width:30px;height:30px}
+.empty-state h3{font-size:15px;font-weight:600;margin-bottom:5px}
+.empty-state p{color:var(--text-muted);font-size:12.5px;margin-bottom:18px;max-width:300px;margin-left:auto;margin-right:auto}
+
+.classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;transition:all .2s;cursor:pointer;position:relative;overflow:hidden}
+.class-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--primary-light)}
+.class-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.class-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white}
+.class-icon svg{width:22px;height:22px}
+.class-actions{display:flex;gap:3px}
+.class-action-btn{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s}
+.class-action-btn:hover{background:var(--surface-2);color:var(--text)}
+.class-action-btn.danger:hover{background:rgba(239,68,68,.1);color:var(--danger)}
+.class-action-btn svg{width:13px;height:13px}
+.class-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.class-school{font-size:11.5px;color:var(--text-muted);margin-bottom:14px}
+.class-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+.class-stat{text-align:center;padding:7px;background:var(--surface-2);border-radius:7px}
+.class-stat-value{font-size:15px;font-weight:700;color:var(--text)}
+.class-stat-label{font-size:9.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.class-info{display:flex;flex-direction:column;gap:5px}
+.class-info-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text-muted)}
+.class-info-row svg{width:13px;height:13px;color:var(--text-subtle);flex-shrink:0}
+.class-info-row strong{color:var(--text);font-weight:600}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:620px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:var(--shadow-lg);transform:scale(.96) translateY(10px);transition:transform .25s cubic-bezier(.4,0,.2,1);margin:auto;position:relative}
+.modal-overlay.active .modal{transform:scale(1) translateY(0)}
+.modal-lg{max-width:700px}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-shrink:0;background:var(--surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.modal-title{font-size:16px;font-weight:700}
+.modal-subtitle{font-size:12px;color:var(--text-muted);margin-top:2px}
+.modal-close{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s;flex-shrink:0}
+.modal-close:hover{background:var(--surface-2);color:var(--text)}
+.modal-close svg{width:17px;height:17px}
+.modal-body{padding:22px;overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0;-webkit-overflow-scrolling:touch}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:7px;flex-shrink:0;background:var(--surface);border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+@media(max-width:540px){.form-grid{grid-template-columns:1fr}}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:3px}
+.form-label .required{color:var(--danger)}
+.form-control{height:38px;padding:0 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);transition:all .15s;width:100%}
+.form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+select.form-control{cursor:pointer}
+.checkbox-group{display:flex;flex-direction:column;gap:7px}
+.checkbox{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s}
+.checkbox:hover{border-color:var(--primary-light)}
+.checkbox input{display:none}
+.checkbox-mark{width:17px;height:17px;border:2px solid var(--border-strong);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.checkbox input:checked ~ .checkbox-mark{background:var(--primary-light);border-color:var(--primary-light)}
+.checkbox input:checked ~ .checkbox-mark::after{content:'';width:4px;height:8px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.checkbox input:checked ~ .checkbox-content .checkbox-title{color:var(--text)}
+.checkbox-content{flex:1;min-width:0}
+.checkbox-title{font-size:12.5px;font-weight:600;color:var(--text-muted)}
+.checkbox-desc{font-size:11px;color:var(--text-subtle);margin-top:1px}
+
+.upload-zone{border:2px dashed var(--border-strong);border-radius:var(--radius);padding:36px 18px;text-align:center;transition:all .2s;cursor:pointer}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--primary-light);background:rgba(59,130,246,.04)}
+.upload-icon{width:52px;height:52px;margin:0 auto 10px;background:var(--surface-2);border-radius:13px;display:flex;align-items:center;justify-content:center;color:var(--primary-light)}
+.upload-icon svg{width:26px;height:26px}
+.upload-title{font-size:13.5px;font-weight:600;margin-bottom:3px}
+.upload-desc{font-size:12px;color:var(--text-muted)}
+.upload-link{color:var(--primary-light);font-weight:600;text-decoration:underline}
+
+.import-preview-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:10px}
+.import-preview-table th,.import-preview-table td{padding:7px 9px;border:1px solid var(--border);text-align:left}
+.import-preview-table th{background:var(--surface-2);font-weight:600;font-size:10.5px;text-transform:uppercase;color:var(--text-muted)}
+.import-preview-table tr:nth-child(even){background:var(--surface-2)}
+.import-status{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:9.5px;font-weight:600}
+.import-status.ok{background:rgba(16,185,129,.1);color:var(--success)}
+.import-status.warn{background:rgba(245,158,11,.1);color:var(--warning)}
+
+.toast-container{position:fixed;top:18px;right:18px;z-index:300;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;box-shadow:var(--shadow-lg);min-width:260px;max-width:380px;display:flex;align-items:flex-start;gap:10px;pointer-events:auto;animation:slideIn .3s}
+.toast.hiding{animation:slideOut .3s forwards}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideOut{to{transform:translateX(120%);opacity:0}}
+.toast-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast-icon svg{width:15px;height:15px}
+.toast.success .toast-icon{background:rgba(16,185,129,.1);color:var(--success)}
+.toast.error .toast-icon{background:rgba(239,68,68,.1);color:var(--danger)}
+.toast.info .toast-icon{background:rgba(59,130,246,.1);color:var(--primary-light)}
+.toast.warning .toast-icon{background:rgba(245,158,11,.1);color:var(--warning)}
+.toast-content{flex:1;min-width:0}
+.toast-title{font-size:12.5px;font-weight:600;margin-bottom:1px}
+.toast-message{font-size:11.5px;color:var(--text-muted)}
+.toast-close{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--text-subtle);flex-shrink:0}
+.toast-close:hover{background:var(--surface-2);color:var(--text)}
+.toast-close svg{width:13px;height:13px}
+
+.view{display:none;animation:fadeIn .3s}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;cursor:pointer;transition:all .2s}
+.report-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--primary-light)}
+.report-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.report-icon svg{width:22px;height:22px}
+.report-card h3{font-size:14px;font-weight:700;margin-bottom:3px}
+.report-card p{font-size:12px;color:var(--text-muted);margin-bottom:10px}
+.report-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-subtle)}
+
+.activity-list{display:flex;flex-direction:column;gap:1px}
+.activity-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:7px;height:7px;border-radius:50%;background:var(--primary-light);margin-top:5px;flex-shrink:0}
+.activity-content{flex:1;min-width:0}
+.activity-text{font-size:12.5px;line-height:1.4}
+.activity-text strong{font-weight:600}
+.activity-time{font-size:11px;color:var(--text-subtle);margin-top:1px}
+
+.mobile-toggle{display:none}
+@media(max-width:1024px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .mobile-toggle{display:flex}
+  .sidebar-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
+  .sidebar-backdrop.active{opacity:1;pointer-events:auto}
+  .class-selector-banner{flex-direction:column;align-items:stretch}
+  .class-select-wrapper select{width:100%;min-width:auto}
+  .home-panels{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .content{padding:14px}
+  .page-title h2{font-size:18px}
+  .kpi-value{font-size:24px}
+  .topbar-search .shortcut{display:none}
+  .modal-overlay{padding:10px;align-items:flex-start}
+  .modal{max-width:100%;margin-top:10px}
+  .modal-body{padding:14px}
+  .modal-header,.modal-footer{padding:12px 14px}
+  .home-welcome h2{font-size:22px}
+  .home-panels{grid-template-columns:1fr}
+  .login-container{padding:28px 22px}
+  .login-brasao{width:110px;height:110px}
+}
+.hidden{display:none!important}
+.text-muted{color:var(--text-muted)}
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-container">
+    <div class="login-logo-wrap">
+      <div class="login-brasao" id="loginBrasao">
+        <svg id="brasaoPlaceholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L3 7v5c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <label class="login-brasao-upload" title="Alterar brasão" onclick="event.preventDefault()">
+        <i data-lucide="camera"></i>
+        <input type="file" id="brasaoUpload" accept="image/*">
+      </label>
+      <div class="login-school-name">EEB ANTÔNIO PINHEIRO DE FREITAS</div>
+      <div class="login-school-sub">Bom Jesus - Baleia · Itapipoca/CE</div>
+    </div>
+    <h1 class="login-title">Sistema de Gestão Escolar</h1>
+    <p class="login-subtitle">Faça login para acessar a plataforma</p>
+
+    <div class="login-error" id="loginError">
+      <i data-lucide="alert-circle"></i>
+      <span id="loginErrorMsg">Usuário ou senha incorretos</span>
+    </div>
+
+    <form id="loginForm">
+      <div class="login-field">
+        <label for="loginUser">Usuário</label>
+        <div class="login-input-wrap">
+          <i data-lucide="user"></i>
+          <input type="text" id="loginUser" class="login-input" placeholder="Digite seu usuário" autocomplete="username" required>
+        </div>
+      </div>
+      <div class="login-field">
+        <label for="loginPass">Senha</label>
+        <div class="login-input-wrap">
+          <i data-lucide="lock"></i>
+          <input type="password" id="loginPass" class="login-input" placeholder="Digite sua senha" autocomplete="current-password" required>
+        </div>
+      </div>
+      <div class="login-options">
+        <label class="login-remember">
+          <input type="checkbox" id="loginRemember">
+          Lembrar-me
+        </label>
+        <span class="login-forgot" onclick="resetPassword()">Trocar senha</span>
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn">
+        <i data-lucide="log-in"></i>
+        Entrar no Sistema
+      </button>
+    </form>
+    
+    <div class="login-footer">
+      © 2026 Secretaria de Educação Básica · Itapipoca/CE
+    </div>
+  </div>
+</div>
+
+<!-- TELA INICIAL (HOME) -->
+<div class="home-screen hidden" id="homeScreen">
+  <header class="home-header">
+    <div class="home-header-left">
+      <div class="home-logo">P</div>
+      <div><h1>Plataforma de Gestão Escolar</h1><p>EEB Antônio Pinheiro de Freitas · Itapipoca/CE · 2026</p></div>
+    </div>
+    <div class="home-header-right">
+      <div class="home-user-info">
+        <div class="user-avatar" style="width:32px;height:32px;font-size:11px" id="homeUserAvatar">AD</div>
+        <div>
+          <div class="user-name" id="homeUserName">Administrador</div>
+          <div class="user-role">Coordenador(a)</div>
+        </div>
+      </div>
+      <button class="home-btn" id="homeThemeToggle" title="Alternar tema"><i data-lucide="moon"></i></button>
+      <button class="home-btn" onclick="logout()" title="Sair"><i data-lucide="log-out"></i></button>
+    </div>
+  </header>
+  <div class="home-content">
+    <div class="home-welcome">
+      <h2 id="homeWelcomeMsg">Bem-vindo(a) de volta!</h2>
+      <p>Selecione o módulo que deseja acessar</p>
+    </div>
+    <h2 class="home-panels-title">Painéis e ferramentas</h2>
+    <div class="home-panels">
+      <div class="home-panel-card matriculas" onclick="openSystem('matriculas')">
+        <div class="home-panel-icon"><i data-lucide="graduation-cap"></i></div>
+        <h3>Gestão de Matrículas</h3>
+        <p>Alunos, turmas, escolas, NEC, Bolsa Família, transporte escolar e relatórios oficiais.</p>
+        <div class="home-panel-footer">
+          <span class="home-panel-tag"><i data-lucide="school"></i>Avaliação municipal</span>
+          <span class="home-panel-arrow"><i data-lucide="arrow-right"></i></span>
+        </div>
+      </div>
+      <div class="home-panel-card servidores" onclick="openSystem('servidores')">
+        <div class="home-panel-icon"><i data-lucide="user-check"></i></div>
+        <h3>Gestão de Servidores</h3>
+        <p>Servidores, cargos, funções, tipos de vínculo e relatórios de recursos humanos.</p>
+        <div class="home-panel-footer">
+          <span class="home-panel-tag"><i data-lucide="briefcase"></i>Gestão de pessoas</span>
+          <span class="home-panel-arrow"><i data-lucide="arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="home-footer">EEB Antônio Pinheiro de Freitas · Bom Jesus - Baleia · Itapipoca/CE · 2026</footer>
+</div>
+
+<!-- SISTEMA MATRÍCULAS -->
+<div class="system-screen" id="systemMatriculas">
+  <div class="app">
+    <aside class="sidebar" id="sidebarMat">
+      <div class="sidebar-header">
+        <button class="back-btn" onclick="goHome()" title="Voltar"><i data-lucide="arrow-left"></i></button>
+        <div class="sidebar-logo matriculas">M</div>
+        <div class="sidebar-title"><h1>Matrículas 2026</h1><p>EEB Antônio Pinheiro</p></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-label">Principal</div>
+          <div class="nav-item active" data-view="dashboard-mat"><i data-lucide="layout-dashboard"></i><span class="label">Dashboard</span></div>
+          <div class="nav-item" data-view="students"><i data-lucide="users"></i><span class="label">Alunos</span></div>
+          <div class="nav-item" data-view="classes"><i data-lucide="school"></i><span class="label">Turmas / Escolas</span></div>
+          <div class="nav-item" data-view="reports-mat"><i data-lucide="file-text"></i><span class="label">Relatórios</span></div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Sistema</div>
+          <div class="nav-item" data-view="import-mat"><i data-lucide="upload-cloud"></i><span class="label">Importar / Exportar</span></div>
+          <div class="nav-item" data-view="settings-mat"><i data-lucide="settings"></i><span class="label">Configurações</span></div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-avatar">CG</div>
+        <div class="user-info"><h4 id="sidebarMatUser">Administrador</h4><p>Coordenação</p></div>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="backdropMat"></div>
+    <div class="main">
+      <header class="topbar">
+        <button class="btn-icon mobile-toggle" onclick="toggleSidebar('Mat')"><i data-lucide="menu"></i></button>
+        <div class="topbar-search">
+          <i data-lucide="search"></i>
+          <input type="text" placeholder="Buscar alunos, turmas..." id="globalSearchMat">
+          <span class="shortcut">Ctrl K</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn-icon" id="themeToggleMat" title="Tema"><i data-lucide="moon"></i></button>
+          <button class="btn-icon" onclick="logout()" title="Sair"><i data-lucide="log-out"></i></button>
+        </div>
+      </header>
+      <main class="content">
+        <section class="view active" id="view-dashboard-mat">
+          <div class="page-header">
+            <div class="page-title"><h2>Dashboard</h2><p>Visão geral das matrículas</p></div>
+            <div class="page-actions">
+              <button class="btn btn-secondary" onclick="exportStudentsPDF()"><i data-lucide="file-down"></i>PDF</button>
+              <button class="btn btn-primary" onclick="openStudentModal()"><i data-lucide="user-plus"></i>Novo Aluno</button>
+            </div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="users"></i></div></div><div class="kpi-value" id="kpi-students">0</div><div class="kpi-label">Total de Alunos</div></div>
+            <div class="kpi-card accent"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="school"></i></div></div><div class="kpi-value" id="kpi-classes">0</div><div class="kpi-label">Turmas Ativas</div></div>
+            <div class="kpi-card success"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="accessibility"></i></div></div><div class="kpi-value" id="kpi-nec">0</div><div class="kpi-label">NEC Especial</div></div>
+            <div class="kpi-card warning"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="bus"></i></div></div><div class="kpi-value" id="kpi-transp">0</div><div class="kpi-label">Transporte</div></div>
+          </div>
+          <div class="charts-grid">
+            <div class="card"><div class="card-header"><div><div class="card-title">Alunos por Turma</div></div></div><div class="chart-container"><canvas id="chartClasses"></canvas></div></div>
+            <div class="card"><div class="card-header"><div><div class="card-title">Situações Especiais</div></div></div><div class="chart-container"><canvas id="chartSituations"></canvas></div></div>
+          </div>
+          <div class="charts-grid">
+            <div class="card"><div class="card-header"><div><div class="card-title">Atividades Recentes</div></div></div><div class="activity-list" id="activityListMat"></div></div>
+            <div class="card"><div class="card-header"><div><div class="card-title">Ações Rápidas</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <button class="btn btn-secondary" onclick="openStudentModal()" style="justify-content:flex-start"><i data-lucide="user-plus"></i>Novo Aluno</button>
+                <button class="btn btn-secondary" onclick="openClassModal()" style="justify-content:flex-start"><i data-lucide="plus"></i>Nova Turma</button>
+                <button class="btn btn-secondary" onclick="switchViewMat('import-mat')" style="justify-content:flex-start"><i data-lucide="upload"></i>Importar Excel</button>
+                <button class="btn btn-secondary" onclick="switchViewMat('reports-mat')" style="justify-content:flex-start"><i data-lucide="file-text"></i>Relatórios</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="view" id="view-students">
+          <div class="page-header">
+            <div class="page-title"><h2>Alunos</h2><p id="studentsSubtitle">Gerencie os alunos matriculados</p></div>
+            <div class="page-actions">
+              <button class="btn btn-secondary" onclick="exportStudentsExcel()"><i data-lucide="file-spreadsheet"></i>Exportar</button>
+              <button class="btn btn-primary" onclick="openStudentModal()"><i data-lucide="user-plus"></i>Novo Aluno</button>
+            </div>
+          </div>
+          <div class="class-selector-banner" id="classSelectorBanner">
+            <div class="banner-icon"><i data-lucide="school"></i></div>
+            <div class="banner-info"><h3 id="bannerTitle">Todas as Turmas</h3><p id="bannerDesc">Visualizando todos os alunos</p></div>
+            <div class="banner-stats">
+              <div class="banner-stat"><div class="banner-stat-value" id="bannerTotal">0</div><div class="banner-stat-label">Alunos</div></div>
+              <div class="banner-stat"><div class="banner-stat-value" id="bannerNec">0</div><div class="banner-stat-label">NEC</div></div>
+              <div class="banner-stat"><div class="banner-stat-value" id="bannerBolsa">0</div><div class="banner-stat-label">Bolsa</div></div>
+              <div class="banner-stat"><div class="banner-stat-value" id="bannerTransp">0</div><div class="banner-stat-label">Transp.</div></div>
+            </div>
+            <div class="class-select-wrapper"><select id="classFilterSelect"><option value="">Todas as Turmas</option></select></div>
+          </div>
+          <div class="table-wrapper">
+            <div class="table-toolbar">
+              <div class="table-search"><i data-lucide="search"></i><input type="text" placeholder="Buscar por nome, CPF, matrícula..." id="studentSearch"></div>
+              <div class="filter-chip" data-filter="all"><i data-lucide="layers"></i>Todos</div>
+              <div class="filter-chip" data-filter="nec"><i data-lucide="accessibility"></i>NEC</div>
+              <div class="filter-chip" data-filter="bolsa"><i data-lucide="heart"></i>Bolsa</div>
+              <div class="filter-chip" data-filter="transp"><i data-lucide="bus"></i>Transporte</div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr>
+                  <th class="sortable" data-sort="name">Nome do Aluno</th>
+                  <th class="sortable" data-sort="birth">Nascimento</th>
+                  <th>CPF</th><th>N° Matrícula</th><th>N° ID</th>
+                  <th>NEC</th><th>Bolsa</th><th>Transporte</th>
+                  <th>Localidade</th><th>Responsável</th><th style="width:90px">Ações</th>
+                </tr></thead>
+                <tbody id="studentsTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer"><div id="tableInfo">0 alunos</div><div class="pagination" id="pagination"></div></div>
+          </div>
+        </section>
+        <section class="view" id="view-classes">
+          <div class="page-header">
+            <div class="page-title"><h2>Turmas e Escolas</h2><p>Organize as turmas</p></div>
+            <div class="page-actions"><button class="btn btn-primary" onclick="openClassModal()"><i data-lucide="plus"></i>Nova Turma</button></div>
+          </div>
+          <div class="classes-grid" id="classesGrid"></div>
+        </section>
+        <section class="view" id="view-reports-mat">
+          <div class="page-header"><div class="page-title"><h2>Relatórios</h2><p>Relatórios oficiais de matrículas</p></div></div>
+          <div class="report-grid">
+            <div class="report-card" onclick="generateStudentReport('lista')"><div class="report-icon" style="background:rgba(59,130,246,.1);color:var(--primary-light)"><i data-lucide="list"></i></div><h3>Relação de Alunos</h3><p>Lista completa</p><div class="report-meta"><span>PDF</span></div></div>
+            <div class="report-card" onclick="generateStudentReport('turma')"><div class="report-icon" style="background:rgba(8,145,178,.1);color:var(--accent)"><i data-lucide="school"></i></div><h3>Por Turma</h3><p>Cabeçalho oficial</p><div class="report-meta"><span>PDF</span></div></div>
+            <div class="report-card" onclick="generateStudentReport('nec')"><div class="report-icon" style="background:rgba(16,185,129,.1);color:var(--success)"><i data-lucide="accessibility"></i></div><h3>NEC Especial</h3><p>Alunos com NEC</p><div class="report-meta"><span>PDF</span></div></div>
+            <div class="report-card" onclick="generateStudentReport('transporte')"><div class="report-icon" style="background:rgba(245,158,11,.1);color:var(--warning)"><i data-lucide="bus"></i></div><h3>Transporte</h3><p>Alunos com transporte</p><div class="report-meta"><span>PDF</span></div></div>
+            <div class="report-card" onclick="generateStudentReport('bolsa')"><div class="report-icon" style="background:rgba(239,68,68,.1);color:var(--danger)"><i data-lucide="heart-handshake"></i></div><h3>Bolsa Família</h3><p>Beneficiários</p><div class="report-meta"><span>PDF</span></div></div>
+          </div>
+        </section>
+        <section class="view" id="view-import-mat">
+          <div class="page-header"><div class="page-title"><h2>Importar / Exportar</h2></div></div>
+          <div class="charts-grid">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Importar Alunos</div><div class="card-subtitle">.xlsx, .xls, .csv</div></div>
+                <button class="btn btn-sm btn-secondary" onclick="downloadTemplate()"><i data-lucide="download"></i>Modelo</button>
+              </div>
+              <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon"><i data-lucide="upload-cloud"></i></div>
+                <div class="upload-title">Arraste a planilha aqui</div>
+                <div class="upload-desc">ou <span class="upload-link">clique para selecionar</span></div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none">
+              </div>
+              <div id="importPreview" class="hidden" style="margin-top:14px"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Exportar Dados</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <button class="btn btn-secondary" onclick="exportStudentsExcel()" style="justify-content:flex-start"><i data-lucide="file-spreadsheet"></i>Excel (.xlsx)</button>
+                <button class="btn btn-secondary" onclick="exportStudentsPDF()" style="justify-content:flex-start"><i data-lucide="file-text"></i>PDF</button>
+                <button class="btn btn-secondary" onclick="exportCSV()" style="justify-content:flex-start"><i data-lucide="file"></i>CSV</button>
+                <button class="btn btn-secondary" onclick="exportJSON()" style="justify-content:flex-start"><i data-lucide="braces"></i>Backup JSON</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="view" id="view-settings-mat">
+          <div class="page-header"><div class="page-title"><h2>Configurações</h2></div></div>
+          <div class="card" style="max-width:700px">
+            <div class="card-header"><div class="card-title">Identificação</div></div>
+            <div class="form-grid">
+              <div class="form-field full"><label class="form-label">Secretaria</label><input class="form-control" id="setSecretaria" value="Secretaria de Educação Básica"></div>
+              <div class="form-field"><label class="form-label">Município</label><input class="form-control" id="setMunicipio" value="Itapipoca"></div>
+              <div class="form-field"><label class="form-label">Estado</label><input class="form-control" id="setEstado" value="Ceará"></div>
+              <div class="form-field full"><label class="form-label">Ano Letivo</label><input class="form-control" id="setAno" value="2026"></div>
+            </div>
+            <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:7px">
+              <button class="btn btn-secondary" onclick="resetSystem()"><i data-lucide="rotate-ccw"></i>Resetar</button>
+              <button class="btn btn-primary" onclick="saveSettings()"><i data-lucide="save"></i>Salvar</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- SISTEMA SERVIDORES -->
+<div class="system-screen" id="systemServidores">
+  <div class="app">
+    <aside class="sidebar" id="sidebarServ">
+      <div class="sidebar-header">
+        <button class="back-btn" onclick="goHome()" title="Voltar"><i data-lucide="arrow-left"></i></button>
+        <div class="sidebar-logo servidores">S</div>
+        <div class="sidebar-title"><h1>Servidores 2026</h1><p>EEB Antônio Pinheiro</p></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-label">Principal</div>
+          <div class="nav-item active" data-view="dashboard-serv"><i data-lucide="layout-dashboard"></i><span class="label">Dashboard</span></div>
+          <div class="nav-item" data-view="servers"><i data-lucide="user-check"></i><span class="label">Servidores</span></div>
+          <div class="nav-item" data-view="positions"><i data-lucide="briefcase"></i><span class="label">Cargos / Funções</span></div>
+          <div class="nav-item" data-view="reports-serv"><i data-lucide="file-bar-chart"></i><span class="label">Relatórios</span></div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Sistema</div>
+          <div class="nav-item" data-view="import-serv"><i data-lucide="upload-cloud"></i><span class="label">Importar / Exportar</span></div>
+          <div class="nav-item" data-view="settings-serv"><i data-lucide="settings"></i><span class="label">Configurações</span></div>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-avatar">RH</div>
+        <div class="user-info"><h4 id="sidebarServUser">Administrador</h4><p>Recursos Humanos</p></div>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="backdropServ"></div>
+    <div class="main">
+      <header class="topbar">
+        <button class="btn-icon mobile-toggle" onclick="toggleSidebar('Serv')"><i data-lucide="menu"></i></button>
+        <div class="topbar-search">
+          <i data-lucide="search"></i>
+          <input type="text" placeholder="Buscar servidores, cargos..." id="globalSearchServ">
+          <span class="shortcut">Ctrl K</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn-icon" id="themeToggleServ" title="Tema"><i data-lucide="moon"></i></button>
+          <button class="btn-icon" onclick="logout()" title="Sair"><i data-lucide="log-out"></i></button>
+        </div>
+      </header>
+      <main class="content">
+        <section class="view active" id="view-dashboard-serv">
+          <div class="page-header">
+            <div class="page-title"><h2>Dashboard</h2><p>Visão geral dos servidores</p></div>
+            <div class="page-actions">
+              <button class="btn btn-secondary" onclick="exportServersPDF()"><i data-lucide="file-down"></i>PDF</button>
+              <button class="btn btn-server" onclick="openServerModal()"><i data-lucide="user-plus"></i>Novo Servidor</button>
+            </div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card server"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="user-check"></i></div></div><div class="kpi-value" id="kpi-servers">0</div><div class="kpi-label">Total de Servidores</div></div>
+            <div class="kpi-card"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="briefcase"></i></div></div><div class="kpi-value" id="kpi-positions">0</div><div class="kpi-label">Cargos Cadastrados</div></div>
+            <div class="kpi-card success"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="shield-check"></i></div></div><div class="kpi-value" id="kpi-efetivos">0</div><div class="kpi-label">Efetivos</div></div>
+            <div class="kpi-card warning"><div class="kpi-header"><div class="kpi-icon"><i data-lucide="award"></i></div></div><div class="kpi-value" id="kpi-comissionados">0</div><div class="kpi-label">Comissionados</div></div>
+          </div>
+          <div class="charts-grid">
+            <div class="card"><div class="card-header"><div><div class="card-title">Servidores por Cargo</div></div></div><div class="chart-container"><canvas id="chartPositions"></canvas></div></div>
+            <div class="card"><div class="card-header"><div><div class="card-title">Por Tipo de Vínculo</div></div></div><div class="chart-container"><canvas id="chartTypes"></canvas></div></div>
+          </div>
+          <div class="charts-grid">
+            <div class="card"><div class="card-header"><div><div class="card-title">Atividades Recentes</div></div></div><div class="activity-list" id="activityListServ"></div></div>
+            <div class="card"><div class="card-header"><div><div class="card-title">Ações Rápidas</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <button class="btn btn-secondary" onclick="openServerModal()" style="justify-content:flex-start"><i data-lucide="user-plus"></i>Novo Servidor</button>
+                <button class="btn btn-secondary" onclick="openPositionModal()" style="justify-content:flex-start"><i data-lucide="briefcase"></i>Novo Cargo</button>
+                <button class="btn btn-secondary" onclick="switchViewServ('import-serv')" style="justify-content:flex-start"><i data-lucide="upload"></i>Importar Excel</button>
+                <button class="btn btn-secondary" onclick="switchViewServ('reports-serv')" style="justify-content:flex-start"><i data-lucide="file-text"></i>Relatórios</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="view" id="view-servers">
+          <div class="page-header">
+            <div class="page-title"><h2>Servidores</h2><p id="serversSubtitle">Gerencie os servidores</p></div>
+            <div class="page-actions">
+              <button class="btn btn-secondary" onclick="exportServersExcel()"><i data-lucide="file-spreadsheet"></i>Exportar</button>
+              <button class="btn btn-server" onclick="openServerModal()"><i data-lucide="user-plus"></i>Novo Servidor</button>
+            </div>
+          </div>
+          <div class="class-selector-banner server" id="serverBanner">
+            <div class="banner-icon"><i data-lucide="user-check"></i></div>
+            <div class="banner-info"><h3 id="serverBannerTitle">Todos os Servidores</h3><p id="serverBannerDesc">Visualizando todos</p></div>
+            <div class="banner-stats">
+              <div class="banner-stat"><div class="banner-stat-value" id="serverBannerTotal">0</div><div class="banner-stat-label">Servidores</div></div>
+              <div class="banner-stat"><div class="banner-stat-value" id="serverBannerCargos">0</div><div class="banner-stat-label">Cargos</div></div>
+              <div class="banner-stat"><div class="banner-stat-value" id="serverBannerTipos">0</div><div class="banner-stat-label">Tipos</div></div>
+            </div>
+            <div class="class-select-wrapper"><select id="cargoFilterSelect"><option value="">Todos os Cargos</option></select></div>
+          </div>
+          <div class="table-wrapper">
+            <div class="table-toolbar">
+              <div class="table-search"><i data-lucide="search"></i><input type="text" placeholder="Buscar por nome, CPF, cargo..." id="serverSearch"></div>
+              <div class="filter-chip" data-filter="all"><i data-lucide="layers"></i>Todos</div>
+              <div class="filter-chip" data-filter="Efetivo"><i data-lucide="shield-check"></i>Efetivo</div>
+              <div class="filter-chip" data-filter="Comissionado"><i data-lucide="award"></i>Comissionado</div>
+              <div class="filter-chip" data-filter="Temporário"><i data-lucide="clock"></i>Temporário</div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr>
+                  <th class="sortable" data-sort="name">Nome dos Servidores</th>
+                  <th>CPF</th>
+                  <th class="sortable" data-sort="birth">Data Nasc.</th>
+                  <th>Cargo / Função</th>
+                  <th>Tipo de Cargo</th>
+                  <th>Email</th>
+                  <th style="width:90px">Ações</th>
+                </tr></thead>
+                <tbody id="serversTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer"><div id="serverTableInfo">0 servidores</div><div class="pagination" id="serverPagination"></div></div>
+          </div>
+        </section>
+        <section class="view" id="view-positions">
+          <div class="page-header">
+            <div class="page-title"><h2>Cargos e Funções</h2><p>Organize os cargos por tipo</p></div>
+            <div class="page-actions"><button class="btn btn-server" onclick="openPositionModal()"><i data-lucide="plus"></i>Novo Cargo</button></div>
+          </div>
+          <div class="classes-grid" id="positionsGrid"></div>
+        </section>
+        <section class="view" id="view-reports-serv">
+          <div class="page-header"><div class="page-title"><h2>Relatórios</h2><p>Relatórios de servidores</p></div></div>
+          <div class="report-grid">
+            <div class="report-card" onclick="generateServerReport('lista')"><div class="report-icon" style="background:rgba(5,150,105,.1);color:#059669"><i data-lucide="list"></i></div><h3>Relação de Servidores</h3><p>Lista completa</p><div class="report-meta"><span>PDF</span></div></div>
+            <div class="report-card" onclick="generateServerReport('cargo')"><div class="report-icon" style="background:rgba(8,145,178,.1);color:var(--accent)"><i data-lucide="briefcase"></i></div><h3>Por Cargo</h3><p>Agrupado por cargo</p><div class="report-meta"><span>PDF</span></div></div>
+            <div class="report-card" onclick="generateServerReport('tipo')"><div class="report-icon" style="background:rgba(245,158,11,.1);color:var(--warning)"><i data-lucide="shield"></i></div><h3>Por Tipo</h3><p>Efetivo, Comissionado...</p><div class="report-meta"><span>PDF</span></div></div>
+          </div>
+        </section>
+        <section class="view" id="view-import-serv">
+          <div class="page-header"><div class="page-title"><h2>Importar / Exportar</h2></div></div>
+          <div class="charts-grid">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Importar Servidores</div><div class="card-subtitle">.xlsx, .xls, .csv</div></div>
+                <button class="btn btn-sm btn-secondary" onclick="downloadServerTemplate()"><i data-lucide="download"></i>Modelo</button>
+              </div>
+              <div class="upload-zone" id="uploadZoneServ">
+                <div class="upload-icon" style="color:#059669"><i data-lucide="upload-cloud"></i></div>
+                <div class="upload-title">Arraste a planilha aqui</div>
+                <div class="upload-desc">ou <span class="upload-link" style="color:#059669">clique para selecionar</span></div>
+                <input type="file" id="fileInputServ" accept=".xlsx,.xls,.csv" style="display:none">
+              </div>
+              <div id="importPreviewServ" class="hidden" style="margin-top:14px"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Exportar Dados</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <button class="btn btn-secondary" onclick="exportServersExcel()" style="justify-content:flex-start"><i data-lucide="file-spreadsheet"></i>Excel (.xlsx)</button>
+                <button class="btn btn-secondary" onclick="exportServersPDF()" style="justify-content:flex-start"><i data-lucide="file-text"></i>PDF</button>
+                <button class="btn btn-secondary" onclick="exportCSV()" style="justify-content:flex-start"><i data-lucide="file"></i>CSV</button>
+                <button class="btn btn-secondary" onclick="exportJSON()" style="justify-content:flex-start"><i data-lucide="braces"></i>Backup JSON</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="view" id="view-settings-serv">
+          <div class="page-header"><div class="page-title"><h2>Configurações</h2></div></div>
+          <div class="card" style="max-width:700px">
+            <div class="card-header"><div class="card-title">Identificação e Acesso</div></div>
+            <div class="form-grid">
+              <div class="form-field full"><label class="form-label">Secretaria</label><input class="form-control" id="setSecretaria2" value="Secretaria de Educação Básica"></div>
+              <div class="form-field"><label class="form-label">Município</label><input class="form-control" id="setMunicipio2" value="Itapipoca"></div>
+              <div class="form-field"><label class="form-label">Estado</label><input class="form-control" id="setEstado2" value="Ceará"></div>
+              <div class="form-field full"><label class="form-label">Ano</label><input class="form-control" id="setAno2" value="2026"></div>
+              <div class="form-field full" style="margin-top:8px;padding-top:16px;border-top:1px solid var(--border)">
+                <label class="form-label">🔐 Alterar Senha do Administrador</label>
+              </div>
+              <div class="form-field"><label class="form-label">Senha Atual</label><input type="password" class="form-control" id="currentPassword" autocomplete="current-password" placeholder="Informe a senha atual"></div>
+              <div class="form-field"><label class="form-label">Nova Senha</label><input type="password" class="form-control" id="newPassword" autocomplete="new-password" placeholder="Mínimo 10 caracteres"></div>
+              <div class="form-field"><label class="form-label">Confirmar Senha</label><input type="password" class="form-control" id="confirmPassword" placeholder="Repita a senha"></div>
+            </div>
+            <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap">
+              <button class="btn btn-secondary" onclick="resetSystem()"><i data-lucide="rotate-ccw"></i>Resetar Sistema</button>
+              <div style="display:flex;gap:7px">
+                <button class="btn btn-secondary" onclick="changePassword()"><i data-lucide="key"></i>Alterar Senha</button>
+                <button class="btn btn-server" onclick="saveSettings()"><i data-lucide="save"></i>Salvar</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- MODAIS -->
+<div class="modal-overlay" id="studentModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div><div class="modal-title" id="studentModalTitle">Cadastrar Aluno</div><div class="modal-subtitle">Preencha os dados</div></div>
+      <button class="modal-close" onclick="closeModal('studentModal')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="studentForm" onsubmit="return false;">
+        <input type="hidden" id="studentId">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Nome do Aluno <span class="required">*</span></label><input class="form-control" id="f-name" required></div>
+          <div class="form-field"><label class="form-label">Data de Nascimento <span class="required">*</span></label><input type="date" class="form-control" id="f-birth" required></div>
+          <div class="form-field"><label class="form-label">CPF <span class="required">*</span></label><input class="form-control" id="f-cpf" placeholder="000.000.000-00" maxlength="14"></div>
+          <div class="form-field"><label class="form-label">N° Matrícula <span class="required">*</span></label><input class="form-control" id="f-matricula" required></div>
+          <div class="form-field"><label class="form-label">N° ID</label><input class="form-control" id="f-id"></div>
+          <div class="form-field"><label class="form-label">Turma <span class="required">*</span></label><select class="form-control" id="f-class" required></select></div>
+          <div class="form-field"><label class="form-label">Localidade <span class="required">*</span></label><input class="form-control" id="f-localidade" required></div>
+          <div class="form-field full"><label class="form-label">Responsável <span class="required">*</span></label><input class="form-control" id="f-guardian" required></div>
+          <div class="form-field full">
+            <label class="form-label">Situações Especiais</label>
+            <div class="checkbox-group">
+              <label class="checkbox"><input type="checkbox" id="f-nec"><span class="checkbox-mark"></span><div class="checkbox-content"><div class="checkbox-title">NEC. Especial</div><div class="checkbox-desc">Necessidade Educacional Especial</div></div></label>
+              <label class="checkbox"><input type="checkbox" id="f-bolsa"><span class="checkbox-mark"></span><div class="checkbox-content"><div class="checkbox-title">Bolsa Família</div><div class="checkbox-desc">Beneficiário do programa</div></div></label>
+              <label class="checkbox"><input type="checkbox" id="f-transp"><span class="checkbox-mark"></span><div class="checkbox-content"><div class="checkbox-title">Transporte</div><div class="checkbox-desc">Transporte escolar</div></div></label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('studentModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveStudent()"><i data-lucide="save"></i>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="classModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="classModalTitle">Nova Turma</div></div>
+      <button class="modal-close" onclick="closeModal('classModal')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="classForm" onsubmit="return false;">
+        <input type="hidden" id="classId">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Nome da Escola <span class="required">*</span></label><input class="form-control" id="c-school" required></div>
+          <div class="form-field"><label class="form-label">Código MEC</label><input class="form-control" id="c-mec"></div>
+          <div class="form-field"><label class="form-label">Ano/Série <span class="required">*</span></label><input class="form-control" id="c-year" required></div>
+          <div class="form-field"><label class="form-label">Turma <span class="required">*</span></label><input class="form-control" id="c-class" required placeholder="Ex: A, B, ÚNICA"></div>
+          <div class="form-field"><label class="form-label">Turno</label><select class="form-control" id="c-shift"><option>Matutino</option><option>Vespertino</option><option>Integral</option><option>Tempo Integral</option></select></div>
+          <div class="form-field"><label class="form-label">Professor P1</label><input class="form-control" id="c-p1"></div>
+          <div class="form-field"><label class="form-label">Professor P2</label><input class="form-control" id="c-p2"></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('classModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveClass()"><i data-lucide="save"></i>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="serverModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div><div class="modal-title" id="serverModalTitle">Cadastrar Servidor</div><div class="modal-subtitle">Preencha os dados do servidor</div></div>
+      <button class="modal-close" onclick="closeModal('serverModal')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="serverForm" onsubmit="return false;">
+        <input type="hidden" id="serverId">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Nome dos Servidores <span class="required">*</span></label><input class="form-control" id="s-name" required></div>
+          <div class="form-field"><label class="form-label">CPF <span class="required">*</span></label><input class="form-control" id="s-cpf" placeholder="000.000.000-00" maxlength="14"></div>
+          <div class="form-field"><label class="form-label">Data de Nascimento <span class="required">*</span></label><input type="date" class="form-control" id="s-birth" required></div>
+          <div class="form-field full">
+            <label class="form-label">Cargo / Função <span class="required">*</span></label>
+            <input class="form-control" id="s-cargo" required placeholder="Digite o cargo ou função..." list="cargo-suggestions" autocomplete="off">
+            <datalist id="cargo-suggestions"></datalist>
+            <small style="font-size:11px;color:var(--text-subtle);margin-top:3px">💡 Digite livremente ou escolha uma sugestão</small>
+          </div>
+          <div class="form-field full">
+            <label class="form-label">Tipo de Cargo <span class="required">*</span></label>
+            <input class="form-control" id="s-type" required placeholder="Digite o tipo, ex: Efetivo, Comissionado..." list="tipo-suggestions" autocomplete="off">
+            <datalist id="tipo-suggestions">
+              <option value="Efetivo">
+              <option value="Comissionado">
+              <option value="Temporário">
+              <option value="Estagiário">
+              <option value="Terceirizado">
+            </datalist>
+            <small style="font-size:11px;color:var(--text-subtle);margin-top:3px">💡 Digite livremente ou escolha uma sugestão</small>
+          </div>
+          <div class="form-field full"><label class="form-label">Email <span class="required">*</span></label><input type="email" class="form-control" id="s-email" required placeholder="servidor@educacao.itapipoca.ce.gov.br"></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('serverModal')">Cancelar</button>
+      <button class="btn btn-server" onclick="saveServer()"><i data-lucide="save"></i>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="positionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="positionModalTitle">Novo Cargo</div></div>
+      <button class="modal-close" onclick="closeModal('positionModal')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="positionForm" onsubmit="return false;">
+        <input type="hidden" id="positionId">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Nome do Cargo / Função <span class="required">*</span></label><input class="form-control" id="p-name" required placeholder="Ex: Professor P1, Diretor, Coordenador..."></div>
+          <div class="form-field">
+            <label class="form-label">Tipo de Cargo <span class="required">*</span></label>
+            <input class="form-control" id="p-type" required placeholder="Digite o tipo..." list="tipo-suggestions-2" autocomplete="off">
+            <datalist id="tipo-suggestions-2">
+              <option value="Efetivo">
+              <option value="Comissionado">
+              <option value="Temporário">
+              <option value="Estagiário">
+              <option value="Terceirizado">
+            </datalist>
+          </div>
+          <div class="form-field"><label class="form-label">Área de Atuação</label><input class="form-control" id="p-area" placeholder="Ex: Pedagógica, Administrativa..."></div>
+          <div class="form-field full"><label class="form-label">Descrição</label><textarea class="form-control" id="p-desc" rows="3" style="height:auto;padding:10px 11px;resize:vertical;min-height:70px" placeholder="Atribuições do cargo..."></textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('positionModal')">Cancelar</button>
+      <button class="btn btn-server" onclick="savePosition()"><i data-lucide="save"></i>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="confirmTitle">Confirmar</div></div>
+      <button class="modal-close" onclick="closeModal('confirmModal')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body"><p id="confirmMessage" style="color:var(--text-muted);font-size:13px">Deseja continuar?</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancelar</button>
+      <button class="btn btn-danger" id="confirmBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================
+// 🔐 SEGURANÇA V2.0 — AUTENTICAÇÃO LOCAL ENDURECIDA
+// IMPORTANTE: esta versão melhora a segurança no modo local, mas não substitui
+// autenticação no servidor. O navegador continua sendo um ambiente não confiável.
+const SECURITY_VERSION = '2.0';
+const DEFAULT_USER = 'admin';
+const DEFAULT_PASS = 'admin123';
+const SESSION_KEY = 'plat_session_v2';
+const CREDS_KEY = 'plat_credentials_v2';
+const MAX_IDLE_MS = 15 * 60 * 1000;
+const MAX_SESSION_MS = 8 * 60 * 60 * 1000;
+const MAX_ATTEMPTS = 5;
+const LOCK_MS = 60 * 1000;
+let securityTimer = null;
+
+function b64(bytes){
+  let binary='';
+  bytes.forEach(b=>binary+=String.fromCharCode(b));
+  return btoa(binary);
+}
+
+async function hashPassword(password, salt){
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:enc.encode(salt), iterations:120000, hash:'SHA-256'}, keyMaterial, 256);
+  return b64(new Uint8Array(bits));
+}
+
+function randomToken(){
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return b64(bytes);
+}
+
+function setCredentials(creds){
+  localStorage.setItem(CREDS_KEY, JSON.stringify(creds));
+}
+
+async function initializeSecurity(){
+  try{
+    const current = JSON.parse(localStorage.getItem(CREDS_KEY) || 'null');
+    if(current && current.user && current.hash && current.salt) return current;
+
+    // Migração única das credenciais antigas da V1, sem manter a senha em texto puro.
+    const legacy = JSON.parse(localStorage.getItem('plat_credentials') || 'null');
+    const user = legacy?.user || DEFAULT_USER;
+    const pass = legacy?.pass || DEFAULT_PASS;
+    const salt = randomToken();
+    const hash = await hashPassword(pass, salt);
+    const migrated = {user, salt, hash, mustChange: !legacy || pass === DEFAULT_PASS, createdAt: Date.now()};
+    setCredentials(migrated);
+    localStorage.removeItem('plat_credentials');
+    return migrated;
+  }catch(e){
+    console.error('Falha ao inicializar segurança:', e);
+    return null;
+  }
+}
+
+function getCredentials(){
+  try{return JSON.parse(localStorage.getItem(CREDS_KEY) || 'null');}
+  catch(e){return null;}
+}
+
+function getLock(){
+  try{return JSON.parse(sessionStorage.getItem('plat_login_lock') || 'null');}
+  catch(e){return null;}
+}
+
+function setLock(data){sessionStorage.setItem('plat_login_lock', JSON.stringify(data));}
+function clearLock(){sessionStorage.removeItem('plat_login_lock');}
+
+function getSession(){
+  try{return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');}
+  catch(e){return null;}
+}
+
+function setSession(user){
+  const now=Date.now();
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({token:randomToken(),user,createdAt:now,lastActivity:now}));
+}
+
+function clearSession(){
+  sessionStorage.removeItem(SESSION_KEY);
+  if(securityTimer) clearTimeout(securityTimer);
+  securityTimer=null;
+}
+
+function touchSession(){
+  const session=getSession();
+  if(!session) return false;
+  const now=Date.now();
+  if(now-session.createdAt>MAX_SESSION_MS || now-session.lastActivity>MAX_IDLE_MS){
+    logout(true);
+    return false;
+  }
+  session.lastActivity=now;
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  scheduleSecurityCheck();
+  return true;
+}
+
+function scheduleSecurityCheck(){
+  if(securityTimer) clearTimeout(securityTimer);
+  securityTimer=setTimeout(()=>{
+    const s=getSession();
+    if(!s) return;
+    const now=Date.now();
+    if(now-s.createdAt>MAX_SESSION_MS || now-s.lastActivity>MAX_IDLE_MS){logout(true);}
+    else scheduleSecurityCheck();
+  }, 30*1000);
+}
+
+async function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const creds=getCredentials();
+  const lock=getLock();
+  const now=Date.now();
+
+  if(lock && lock.until>now){
+    const seconds=Math.ceil((lock.until-now)/1000);
+    document.getElementById('loginErrorMsg').textContent=`Muitas tentativas. Aguarde ${seconds}s.`;
+    document.getElementById('loginError').classList.add('show');
+    return;
+  }
+  if(!creds){
+    document.getElementById('loginErrorMsg').textContent='Não foi possível inicializar a segurança. Recarregue a página.';
+    document.getElementById('loginError').classList.add('show');
+    return;
+  }
+
+  const hash=await hashPassword(pass, creds.salt);
+  if(user===creds.user && hash===creds.hash){
+    clearLock();
+    setSession(user);
+    document.getElementById('loginRemember').checked=false;
+    document.getElementById('loginError').classList.remove('show');
+    showHomeScreen();
+    scheduleSecurityCheck();
+    if(creds.mustChange){
+      toast('warning','Troque a senha','A senha inicial deve ser alterada em Configurações.');
+    }else{
+      toast('success','Bem-vindo(a)!','Login realizado com sucesso');
+    }
+  }else{
+    const attempts=(lock?.attempts||0)+1;
+    if(attempts>=MAX_ATTEMPTS){
+      setLock({attempts:0,until:now+LOCK_MS});
+      document.getElementById('loginErrorMsg').textContent='Muitas tentativas. O acesso foi bloqueado por 60 segundos.';
+    }else{
+      setLock({attempts,until:0});
+      document.getElementById('loginErrorMsg').textContent=`Usuário ou senha incorretos. Tentativa ${attempts} de ${MAX_ATTEMPTS}.`;
+    }
+    document.getElementById('loginError').classList.add('show');
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function logout(expired=false){
+  clearSession();
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').classList.remove('show');
+  document.getElementById('homeScreen').classList.add('hidden');
+  document.getElementById('systemMatriculas').classList.remove('active');
+  document.getElementById('systemServidores').classList.remove('active');
+  document.getElementById('loginScreen').style.display='flex';
+  lucide.createIcons();
+  toast(expired?'warning':'info',expired?'Sessão expirada':'Sessão encerrada',expired?'Faça login novamente por segurança.':'Você saiu do sistema');
+}
+
+async function resetPassword(){
+  const current=prompt('Para redefinir a senha, informe a senha atual:');
+  if(current===null) return;
+  const creds=getCredentials();
+  if(!creds) return;
+  const currentHash=await hashPassword(current,creds.salt);
+  if(currentHash!==creds.hash){toast('error','Senha atual incorreta','A senha não foi alterada.');return;}
+  const newPass=prompt('Digite a nova senha (mínimo 10 caracteres):');
+  if(newPass===null) return;
+  const confirmPass=prompt('Confirme a nova senha:');
+  if(newPass!==confirmPass){toast('error','Senhas diferentes','As senhas não coincidem.');return;}
+  if(newPass.length<10){toast('error','Senha fraca','Use pelo menos 10 caracteres.');return;}
+  const salt=randomToken();
+  const hash=await hashPassword(newPass,salt);
+  setCredentials({...creds,salt,hash,mustChange:false,changedAt:Date.now()});
+  toast('success','Senha alterada','A senha foi atualizada com segurança.');
+}
+
+async function changePassword(){
+  const currentPass=document.getElementById('currentPassword')?.value || '';
+  const newPass=document.getElementById('newPassword').value;
+  const confirmPass=document.getElementById('confirmPassword').value;
+  const creds=getCredentials();
+  if(!creds){toast('error','Erro de segurança','Credenciais não encontradas.');return;}
+  if(!currentPass){toast('error','Informe a senha atual','Por segurança, confirme sua senha atual.');return;}
+  if((await hashPassword(currentPass,creds.salt))!==creds.hash){toast('error','Senha atual incorreta','A senha não foi alterada.');return;}
+  if(!newPass || newPass.length<10){toast('error','Senha fraca','Use pelo menos 10 caracteres.');return;}
+  if(newPass!==confirmPass){toast('error','Senhas diferentes','As senhas não coincidem.');return;}
+  const salt=randomToken();
+  const hash=await hashPassword(newPass,salt);
+  setCredentials({...creds,salt,hash,mustChange:false,changedAt:Date.now()});
+  ['currentPassword','newPassword','confirmPassword'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  toast('success','Senha alterada','Sua senha foi atualizada com sucesso');
+}
+
+function checkSession(){
+  const session=getSession();
+  if(session && touchSession()) showHomeScreen();
+  else document.getElementById('loginScreen').style.display='flex';
+}
+
+function showHomeScreen(){
+  const session=getSession();
+  if(!session) return;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('homeScreen').classList.remove('hidden');
+  const user=session.user||DEFAULT_USER;
+  document.getElementById('homeUserName').textContent=user==='admin'?'Administrador':user;
+  document.getElementById('homeUserAvatar').textContent=user.substring(0,2).toUpperCase();
+  document.getElementById('sidebarMatUser').textContent=user==='admin'?'Administrador':user;
+  document.getElementById('sidebarServUser').textContent=user==='admin'?'Administrador':user;
+  document.getElementById('homeWelcomeMsg').textContent='Bem-vindo(a), '+(user==='admin'?'Administrador':user)+'!';
+  lucide.createIcons();
+}
+
+// Atividade do usuário renova somente a sessão válida; não cria autenticação.
+['click','keydown','mousemove','touchstart'].forEach(evt=>document.addEventListener(evt,()=>{
+  if(getSession()) touchSession();
+},{passive:true}));
+
+// Event listeners do login
+document.getElementById('loginForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  doLogin();
+});
+
+document.getElementById('loginPass').addEventListener('keypress', function(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    doLogin();
+  }
+});
+
+document.getElementById('loginUser').addEventListener('keypress', function(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    document.getElementById('loginPass').focus();
+  }
+});
+
+// Upload do brasão
+document.getElementById('brasaoUpload').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const imgData = ev.target.result;
+    localStorage.setItem('plat_brasao', imgData);
+    applyBrasao(imgData);
+    toast('success', 'Brasão atualizado', 'A imagem foi salva com sucesso');
+  };
+  reader.readAsDataURL(file);
+});
+
+function applyBrasao(imgData){
+  const brasao = document.getElementById('loginBrasao');
+  const placeholder = document.getElementById('brasaoPlaceholder');
+  if(imgData){
+    placeholder.style.display = 'none';
+    let img = brasao.querySelector('img');
+    if(!img){
+      img = document.createElement('img');
+      brasao.appendChild(img);
+    }
+    img.src = imgData;
+  } else {
+    placeholder.style.display = 'block';
+    const img = brasao.querySelector('img');
+    if(img) img.remove();
+  }
+}
+
+const savedBrasao = localStorage.getItem('plat_brasao');
+if(savedBrasao) applyBrasao(savedBrasao);
+
+// ============================================
+// ESTADO DO SISTEMA
+// ============================================
+let state = {
+  students: JSON.parse(localStorage.getItem('plat_students') || '[]'),
+  classes: JSON.parse(localStorage.getItem('plat_classes') || '[]'),
+  servers: JSON.parse(localStorage.getItem('plat_servers') || '[]'),
+  positions: JSON.parse(localStorage.getItem('plat_positions') || '[]'),
+  activities: JSON.parse(localStorage.getItem('plat_activities') || '[]'),
+  currentSystem: null,
+  currentView: '',
+  selectedClassId: '',
+  selectedCargo: '',
+  studentFilter: 'all', studentSearch: '', studentSort: { field: 'name', dir: 'asc' }, studentPage: 1,
+  serverFilter: 'all', serverSearch: '', serverSort: { field: 'name', dir: 'asc' }, serverPage: 1,
+  perPage: 10,
+  charts: {},
+  colorIndex: parseInt(localStorage.getItem('plat_colorIndex') || '0')
+};
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const save = () => {
+  localStorage.setItem('plat_students', JSON.stringify(state.students));
+  localStorage.setItem('plat_classes', JSON.stringify(state.classes));
+  localStorage.setItem('plat_servers', JSON.stringify(state.servers));
+  localStorage.setItem('plat_positions', JSON.stringify(state.positions));
+  localStorage.setItem('plat_activities', JSON.stringify(state.activities.slice(0, 50)));
+  localStorage.setItem('plat_colorIndex', state.colorIndex.toString());
+};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const formatCPF = v => v.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2').slice(0,14);
+
+function formatDate(d){
+  if(!d) return '—';
+  const str = String(d).trim();
+  if(!str) return '—';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str)){
+    const [y,m,day] = str.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  const m1 = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(m1){
+    const day = String(m1[1]).padStart(2,'0');
+    const month = String(m1[2]).padStart(2,'0');
+    return `${day}/${month}/${m1[3]}`;
+  }
+  const m2 = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m2){
+    const first = parseInt(m2[1]);
+    const second = parseInt(m2[2]);
+    let year = m2[3];
+    if(year.length === 2) year = '20' + year;
+    if(first > 12){
+      return `${String(first).padStart(2,'0')}/${String(second).padStart(2,'0')}/${year}`;
+    }
+    if(second > 12){
+      return `${String(second).padStart(2,'0')}/${String(first).padStart(2,'0')}/${year}`;
+    }
+    return `${String(first).padStart(2,'0')}/${String(second).padStart(2,'0')}/${year}`;
+  }
+  const m3 = str.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(m3){
+    return `${String(m3[1]).padStart(2,'0')}/${String(m3[2]).padStart(2,'0')}/${m3[3]}`;
+  }
+  return str;
+}
+
+const colors = ['#3b82f6','#0891b2','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
+const avatarColor = name => colors[(name||'').charCodeAt(0) % colors.length];
+const initials = name => (name||'?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+const classColors = [
+  { bg: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)', shadow: 'rgba(30,64,175,.35)' },
+  { bg: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', shadow: 'rgba(8,145,178,.35)' },
+  { bg: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', shadow: 'rgba(16,185,129,.35)' },
+  { bg: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', shadow: 'rgba(245,158,11,.35)' },
+  { bg: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)', shadow: 'rgba(239,68,68,.35)' },
+  { bg: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)', shadow: 'rgba(139,92,246,.35)' },
+  { bg: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)', shadow: 'rgba(236,72,153,.35)' },
+  { bg: 'linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%)', shadow: 'rgba(20,184,166,.35)' },
+  { bg: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)', shadow: 'rgba(249,115,22,.35)' },
+  { bg: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)', shadow: 'rgba(99,102,241,.35)' },
+  { bg: 'linear-gradient(135deg, #84cc16 0%, #a3e635 100%)', shadow: 'rgba(132,204,22,.35)' },
+  { bg: 'linear-gradient(135deg, #e11d48 0%, #fb7185 100%)', shadow: 'rgba(225,29,72,.35)' },
+];
+const positionColors = [
+  { bg: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', shadow: 'rgba(5,150,105,.35)' },
+  { bg: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', shadow: 'rgba(8,145,178,.35)' },
+  { bg: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)', shadow: 'rgba(124,58,237,.35)' },
+  { bg: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', shadow: 'rgba(220,38,38,.35)' },
+  { bg: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', shadow: 'rgba(217,119,6,.35)' },
+  { bg: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', shadow: 'rgba(37,99,235,.35)' },
+  { bg: 'linear-gradient(135deg, #be185d 0%, #ec4899 100%)', shadow: 'rgba(190,24,93,.35)' },
+  { bg: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', shadow: 'rgba(13,148,136,.35)' },
+];
+function getClassColor(idx){ return classColors[(idx||0) % classColors.length]; }
+function getPositionColor(idx){ return positionColors[(idx||0) % positionColors.length]; }
+
+function parseExcelDate(value) {
+  if (!value) return '';
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return '';
+    return `${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}`;
+  }
+  if (typeof value === 'number') {
+    let s = value; if (s > 60) s -= 2; else if (s === 60) return '1900-02-28';
+    const d = new Date(new Date(1899,11,30).getTime() + s*86400000);
+    if (isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  const str = String(value).trim();
+  if (!str) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const m1 = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m1) return `${m1[3]}-${String(m1[2]).padStart(2,'0')}-${String(m1[1]).padStart(2,'0')}`;
+  const m2 = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m2) {
+    const first = parseInt(m2[1]);
+    const second = parseInt(m2[2]);
+    let year = m2[3];
+    if(year.length === 2) year = '20' + year;
+    if(first > 12) return `${year}-${String(second).padStart(2,'0')}-${String(first).padStart(2,'0')}`;
+    if(second > 12) return `${year}-${String(first).padStart(2,'0')}-${String(second).padStart(2,'0')}`;
+    return `${m2[3].length===2?'20'+m2[3]:m2[3]}-${String(m2[2]).padStart(2,'0')}-${String(m2[1]).padStart(2,'0')}`;
+  }
+  const m3 = str.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (m3) return `${m3[3]}-${String(m3[2]).padStart(2,'0')}-${String(m3[1]).padStart(2,'0')}`;
+  return str;
+}
+function parseBoolean(v){ if(!v)return false; if(typeof v==='boolean')return v; if(typeof v==='number')return v===1; return ['sim','s','true','verdadeiro','1','yes','y'].includes(String(v).trim().toLowerCase()); }
+function parseString(v){ if(!v)return ''; if(typeof v==='number')return String(v); return String(v).trim(); }
+function parseCPF(v){ if(!v)return ''; const d=String(v).replace(/\D/g,''); if(d.length===11)return formatCPF(d); if(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(String(v)))return String(v); return String(v).trim(); }
+
+function toast(type, title, message){
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = {success:'check-circle',error:'alert-circle',info:'info',warning:'alert-triangle'};
+  t.innerHTML = `<div class="toast-icon"><i data-lucide="${icons[type]}"></i></div><div class="toast-content"><div class="toast-title">${title}</div>${message?`<div class="toast-message">${message}</div>`:''}</div><button class="toast-close" onclick="this.parentElement.classList.add('hiding');setTimeout(()=>this.parentElement.remove(),300)"><i data-lucide="x"></i></button>`;
+  document.getElementById('toastContainer').appendChild(t);
+  lucide.createIcons();
+  setTimeout(()=>{ t.classList.add('hiding'); setTimeout(()=>t.remove(),300); }, 4000);
+}
+
+function addActivity(text){
+  state.activities.unshift({ text, time: new Date().toISOString() });
+  state.activities = state.activities.slice(0, 50);
+  save();
+}
+
+function timeAgo(iso){
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if(diff<60) return 'agora';
+  if(diff<3600) return Math.floor(diff/60)+' min atrás';
+  if(diff<86400) return Math.floor(diff/3600)+' h atrás';
+  return Math.floor(diff/86400)+' dias atrás';
+}
+
+function openSystem(system){
+  state.currentSystem = system;
+  document.getElementById('homeScreen').classList.add('hidden');
+  if(system === 'matriculas'){
+    document.getElementById('systemMatriculas').classList.add('active');
+    state.currentView = 'dashboard-mat';
+    switchViewMat('dashboard-mat');
+  } else {
+    document.getElementById('systemServidores').classList.add('active');
+    state.currentView = 'dashboard-serv';
+    switchViewServ('dashboard-serv');
+  }
+}
+
+function goHome(){
+  state.currentSystem = null;
+  document.getElementById('systemMatriculas').classList.remove('active');
+  document.getElementById('systemServidores').classList.remove('active');
+  document.getElementById('homeScreen').classList.remove('hidden');
+  lucide.createIcons();
+}
+
+function toggleSidebar(sys){
+  document.getElementById(`sidebar${sys}`).classList.toggle('open');
+  document.getElementById(`backdrop${sys}`).classList.toggle('active');
+}
+
+function switchViewMat(view){
+  state.currentView = view;
+  $$('#sidebarMat .nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  $$('#systemMatriculas .view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
+  if(window.innerWidth<=1024){ document.getElementById('sidebarMat').classList.remove('open'); document.getElementById('backdropMat').classList.remove('active'); }
+  if(view==='dashboard-mat') renderDashboardMat();
+  if(view==='students') renderStudents();
+  if(view==='classes') renderClasses();
+}
+
+function switchViewServ(view){
+  state.currentView = view;
+  $$('#sidebarServ .nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  $$('#systemServidores .view').forEach(v => v.classList.toggle('active', v.id === `view-${view}`));
+  if(window.innerWidth<=1024){ document.getElementById('sidebarServ').classList.remove('open'); document.getElementById('backdropServ').classList.remove('active'); }
+  if(view==='dashboard-serv') renderDashboardServ();
+  if(view==='servers') renderServers();
+  if(view==='positions') renderPositions();
+}
+
+$$('[data-view]').forEach(n => {
+  n.addEventListener('click', () => {
+    const view = n.dataset.view;
+    if(view.endsWith('-mat') || ['students','classes','reports-mat','import-mat','settings-mat'].includes(view)){
+      switchViewMat(view);
+    } else if(view.endsWith('-serv') || ['servers','positions','reports-serv','import-serv','settings-serv'].includes(view)){
+      switchViewServ(view);
+    }
+  });
+});
+
+document.getElementById('homeThemeToggle').addEventListener('click', toggleTheme);
+document.getElementById('themeToggleMat').addEventListener('click', toggleTheme);
+document.getElementById('themeToggleServ').addEventListener('click', toggleTheme);
+
+function toggleTheme(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  const icon = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+  document.getElementById('homeThemeToggle').innerHTML = icon;
+  document.getElementById('themeToggleMat').innerHTML = icon;
+  document.getElementById('themeToggleServ').innerHTML = icon;
+  lucide.createIcons();
+  localStorage.setItem('plat_theme', isDark ? '' : 'dark');
+  if(state.currentSystem==='matriculas') renderChartsMat();
+  if(state.currentSystem==='servidores') renderChartsServ();
+}
+if(localStorage.getItem('plat_theme') === 'dark'){
+  document.documentElement.setAttribute('data-theme','dark');
+  setTimeout(()=>{
+    const icon = '<i data-lucide="sun"></i>';
+    document.getElementById('homeThemeToggle').innerHTML = icon;
+    document.getElementById('themeToggleMat').innerHTML = icon;
+    document.getElementById('themeToggleServ').innerHTML = icon;
+    lucide.createIcons();
+  }, 0);
+}
+
+function openModal(id){ document.getElementById(id).classList.add('active'); document.body.style.overflow='hidden'; document.getElementById(id).scrollTop=0; }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); document.body.style.overflow=''; }
+$$('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) closeModal(m.id); }));
+
+function populateClassSelect(selectId, includeAll=false){
+  const sel = document.getElementById(selectId); if(!sel) return;
+  const cv = sel.value;
+  sel.innerHTML = includeAll ? '<option value="">Todas as Turmas</option>' : '<option value="">Selecione uma turma</option>';
+  state.classes.forEach(c => { const opt=document.createElement('option'); opt.value=c.id; opt.textContent=`${c.year} ${c.class} — ${c.school}`; sel.appendChild(opt); });
+  sel.value = cv;
+}
+
+function populateCargoSuggestions(){
+  const datalist = document.getElementById('cargo-suggestions');
+  if(!datalist) return;
+  const cargos = [...new Set(state.servers.map(s => s.cargo).filter(Boolean))];
+  const posCargos = state.positions.map(p => p.name);
+  const all = [...new Set([...cargos, ...posCargos])];
+  datalist.replaceChildren(...all.map(c=>{const opt=document.createElement('option');opt.value=String(c);return opt;}));
+}
+
+function populateTipoSuggestions(){
+  const tipos = ['Efetivo','Comissionado','Temporário','Estagiário','Terceirizado'];
+  const serverTipos = [...new Set(state.servers.map(s => s.type).filter(Boolean))];
+  const posTipos = [...new Set(state.positions.map(p => p.type).filter(Boolean))];
+  const all = [...new Set([...tipos, ...serverTipos, ...posTipos])];
+  ['tipo-suggestions','tipo-suggestions-2'].forEach(id => {
+    const dl = document.getElementById(id);
+    if(dl) dl.innerHTML = all.map(t => `<option value="${t}">`).join('');
+  });
+}
+
+// ========== MATRÍCULAS ==========
+function openStudentModal(id){
+  document.getElementById('studentForm').reset(); document.getElementById('studentId').value=''; document.getElementById('studentModalTitle').textContent='Cadastrar Aluno';
+  populateClassSelect('f-class');
+  if(state.selectedClassId && !id) document.getElementById('f-class').value = state.selectedClassId;
+  if(id){
+    const s = state.students.find(x=>x.id===id);
+    if(s){
+      document.getElementById('studentModalTitle').textContent='Editar Aluno'; document.getElementById('studentId').value=s.id;
+      document.getElementById('f-name').value=s.name; document.getElementById('f-birth').value=s.birth; document.getElementById('f-cpf').value=s.cpf;
+      document.getElementById('f-matricula').value=s.matricula; document.getElementById('f-id').value=s.studentId||'';
+      document.getElementById('f-class').value=s.classId; document.getElementById('f-localidade').value=s.localidade;
+      document.getElementById('f-guardian').value=s.guardian;
+      document.getElementById('f-nec').checked=s.nec; document.getElementById('f-bolsa').checked=s.bolsa; document.getElementById('f-transp').checked=s.transp;
+    }
+  }
+  openModal('studentModal');
+}
+document.getElementById('f-cpf').addEventListener('input', e=>e.target.value=formatCPF(e.target.value));
+
+function saveStudent(){
+  const name=document.getElementById('f-name').value.trim(),birth=document.getElementById('f-birth').value,cpf=document.getElementById('f-cpf').value.trim();
+  const matricula=document.getElementById('f-matricula').value.trim(),classId=document.getElementById('f-class').value;
+  const localidade=document.getElementById('f-localidade').value.trim(),guardian=document.getElementById('f-guardian').value.trim();
+  if(!name||!birth||!cpf||!matricula||!classId||!localidade||!guardian){toast('error','Campos obrigatórios','Preencha os campos *');return;}
+  const data={name,birth,cpf,matricula,studentId:document.getElementById('f-id').value.trim(),classId,localidade,guardian,nec:document.getElementById('f-nec').checked,bolsa:document.getElementById('f-bolsa').checked,transp:document.getElementById('f-transp').checked};
+  const id=document.getElementById('studentId').value;
+  if(id){const idx=state.students.findIndex(s=>s.id===id);state.students[idx]={...state.students[idx],...data};addActivity(`Aluno <strong>${name}</strong> atualizado`);toast('success','Aluno atualizado',name);}
+  else{data.id=uid();data.createdAt=new Date().toISOString();state.students.push(data);addActivity(`Novo aluno: <strong>${name}</strong>`);toast('success','Aluno cadastrado',name);}
+  save();closeModal('studentModal');renderAllMat();
+}
+
+function deleteStudent(id){
+  const s=state.students.find(x=>x.id===id);if(!s)return;
+  document.getElementById('confirmTitle').textContent='Excluir aluno';document.getElementById('confirmMessage').innerHTML=`Excluir <strong>${s.name}</strong>?`;
+  document.getElementById('confirmBtn').onclick=()=>{state.students=state.students.filter(x=>x.id!==id);addActivity(`Aluno <strong>${s.name}</strong> excluído`);save();closeModal('confirmModal');renderAllMat();toast('success','Aluno excluído',s.name);};
+  openModal('confirmModal');
+}
+
+function openClassModal(id){
+  document.getElementById('classForm').reset();document.getElementById('classId').value='';document.getElementById('classModalTitle').textContent='Nova Turma';
+  if(id){const c=state.classes.find(x=>x.id===id);if(c){document.getElementById('classModalTitle').textContent='Editar Turma';document.getElementById('classId').value=c.id;document.getElementById('c-school').value=c.school;document.getElementById('c-mec').value=c.mec||'';document.getElementById('c-year').value=c.year;document.getElementById('c-class').value=c.class;document.getElementById('c-shift').value=c.shift;document.getElementById('c-p1').value=c.p1||'';document.getElementById('c-p2').value=c.p2||'';}}
+  openModal('classModal');
+}
+
+function saveClass(){
+  const school=document.getElementById('c-school').value.trim(),year=document.getElementById('c-year').value.trim(),cls=document.getElementById('c-class').value.trim();
+  if(!school||!year||!cls){toast('error','Campos obrigatórios','Preencha escola, ano e turma');return;}
+  const data={school,year,class:cls,mec:document.getElementById('c-mec').value.trim(),shift:document.getElementById('c-shift').value,p1:document.getElementById('c-p1').value.trim(),p2:document.getElementById('c-p2').value.trim()};
+  const id=document.getElementById('classId').value;
+  if(id){const idx=state.classes.findIndex(c=>c.id===id);state.classes[idx]={...state.classes[idx],...data};addActivity(`Turma <strong>${year} ${cls}</strong> atualizada`);toast('success','Turma atualizada');}
+  else{data.id=uid();data.colorIndex=state.colorIndex;state.colorIndex=(state.colorIndex+1)%classColors.length;state.classes.push(data);addActivity(`Nova turma: <strong>${year} ${cls}</strong>`);toast('success','Turma criada',`${year} ${cls}`);}
+  save();closeModal('classModal');renderAllMat();
+}
+
+function deleteClass(id){
+  const c=state.classes.find(x=>x.id===id);if(!c)return;
+  const count=state.students.filter(s=>s.classId===id).length;
+  document.getElementById('confirmTitle').textContent='Excluir turma';document.getElementById('confirmMessage').innerHTML=`Excluir <strong>${c.year} ${c.class}</strong>?${count?`<br><br>⚠️ <strong>${count} aluno(s)</strong> vinculados.`:''}`;
+  document.getElementById('confirmBtn').onclick=()=>{state.classes=state.classes.filter(x=>x.id!==id);state.students.forEach(s=>{if(s.classId===id)s.classId='';});if(state.selectedClassId===id)state.selectedClassId='';addActivity(`Turma <strong>${c.year} ${c.class}</strong> excluída`);save();closeModal('confirmModal');renderAllMat();toast('success','Turma excluída');};
+  openModal('confirmModal');
+}
+
+function renderAllMat(){
+  populateClassSelect('classFilterSelect',true);
+  if(state.currentView==='dashboard-mat')renderDashboardMat();
+  if(state.currentView==='students')renderStudents();
+  if(state.currentView==='classes')renderClasses();
+}
+
+function renderDashboardMat(){
+  document.getElementById('kpi-students').textContent=state.students.length;
+  document.getElementById('kpi-classes').textContent=state.classes.length;
+  document.getElementById('kpi-nec').textContent=state.students.filter(s=>s.nec).length;
+  document.getElementById('kpi-transp').textContent=state.students.filter(s=>s.transp).length;
+  renderChartsMat();
+  renderActivitiesMat();
+}
+
+function renderActivitiesMat(){
+  const list=document.getElementById('activityListMat');
+  if(state.activities.length===0){list.innerHTML=`<div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-text">Nenhuma atividade</div></div></div>`;return;}
+  list.innerHTML=state.activities.slice(0,8).map(a=>`<div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-text">${a.text}</div><div class="activity-time">${timeAgo(a.time)}</div></div></div>`).join('');
+}
+
+function renderChartsMat(){
+  const ctx1=document.getElementById('chartClasses');if(!ctx1)return;
+  if(state.charts.c1)state.charts.c1.destroy();
+  const classData=state.classes.map(c=>({label:`${c.year} ${c.class}`,count:state.students.filter(s=>s.classId===c.id).length})).filter(d=>d.count>0);
+  const tc=getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+  const gc=getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+  state.charts.c1=new Chart(ctx1,{type:'bar',data:{labels:classData.length?classData.map(d=>d.label):['Sem dados'],datasets:[{data:classData.length?classData.map(d=>d.count):[0],backgroundColor:'rgba(59,130,246,.8)',borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:tc,precision:0},grid:{color:gc}},x:{ticks:{color:tc},grid:{display:false}}}}});
+  const ctx2=document.getElementById('chartSituations');if(!ctx2)return;
+  if(state.charts.c2)state.charts.c2.destroy();
+  const total=state.students.length||1;
+  const nec=state.students.filter(s=>s.nec).length,bolsa=state.students.filter(s=>s.bolsa).length,transp=state.students.filter(s=>s.transp).length;
+  const outros=total-nec-bolsa-transp;
+  state.charts.c2=new Chart(ctx2,{type:'doughnut',data:{labels:['NEC','Bolsa Família','Transporte','Regular'],datasets:[{data:[nec,bolsa,transp,Math.max(0,outros)],backgroundColor:['#10b981','#f59e0b','#3b82f6','#e2e8f0'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:tc,padding:10,font:{size:11}}}}}});
+}
+
+function getFilteredStudents(){
+  let list=[...state.students];
+  if(state.selectedClassId)list=list.filter(s=>s.classId===state.selectedClassId);
+  if(state.studentFilter==='nec')list=list.filter(s=>s.nec);
+  if(state.studentFilter==='bolsa')list=list.filter(s=>s.bolsa);
+  if(state.studentFilter==='transp')list=list.filter(s=>s.transp);
+  if(state.studentSearch){const q=state.studentSearch.toLowerCase();list=list.filter(s=>s.name.toLowerCase().includes(q)||s.cpf.includes(q)||s.matricula.toLowerCase().includes(q)||(s.guardian||'').toLowerCase().includes(q));}
+  list.sort((a,b)=>{const f=state.studentSort.field;const av=(a[f]||'').toString().toLowerCase(),bv=(b[f]||'').toString().toLowerCase();return state.studentSort.dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);});
+  return list;
+}
+
+function updateClassBanner(){
+  const classId=state.selectedClassId;
+  if(!classId){document.getElementById('bannerTitle').textContent='Todas as Turmas';document.getElementById('bannerDesc').textContent='Visualizando todos os alunos';document.getElementById('bannerTotal').textContent=state.students.length;document.getElementById('bannerNec').textContent=state.students.filter(s=>s.nec).length;document.getElementById('bannerBolsa').textContent=state.students.filter(s=>s.bolsa).length;document.getElementById('bannerTransp').textContent=state.students.filter(s=>s.transp).length;document.getElementById('studentsSubtitle').textContent='Gerencie os alunos matriculados';}
+  else{const cls=state.classes.find(c=>c.id===classId);if(cls){const students=state.students.filter(s=>s.classId===classId);document.getElementById('bannerTitle').textContent=`${cls.year} ${cls.class} — ${cls.school}`;document.getElementById('bannerDesc').textContent=`${cls.shift} · ${cls.p1?`Prof. ${cls.p1}`:'Sem professor'}`;document.getElementById('bannerTotal').textContent=students.length;document.getElementById('bannerNec').textContent=students.filter(s=>s.nec).length;document.getElementById('bannerBolsa').textContent=students.filter(s=>s.bolsa).length;document.getElementById('bannerTransp').textContent=students.filter(s=>s.transp).length;document.getElementById('studentsSubtitle').textContent=`Turma ${cls.year} ${cls.class} · ${cls.school}`;}}
+}
+
+function renderStudents(){
+  populateClassSelect('classFilterSelect',true);document.getElementById('classFilterSelect').value=state.selectedClassId;updateClassBanner();
+  const list=getFilteredStudents();const total=list.length;const pages=Math.max(1,Math.ceil(total/state.perPage));
+  if(state.studentPage>pages)state.studentPage=1;const start=(state.studentPage-1)*state.perPage;const page=list.slice(start,start+state.perPage);
+  const tbody=document.getElementById('studentsTableBody');
+  if(page.length===0){tbody.innerHTML=`<tr><td colspan="11"><div class="empty-state"><div class="empty-icon"><i data-lucide="users"></i></div><h3>${state.students.length===0?'Nenhum aluno cadastrado':'Nenhum resultado'}</h3><p>${state.students.length===0?'Clique em "Novo Aluno" ou importe do Excel':'Ajuste os filtros'}</p>${state.students.length===0?`<button class="btn btn-primary" onclick="openStudentModal()"><i data-lucide="user-plus"></i>Novo Aluno</button>`:''}</div></td></tr>`;}
+  else{tbody.innerHTML=page.map(s=>{const necBadge=s.nec?'<span class="badge badge-success"><i data-lucide="accessibility"></i>Sim</span>':'<span class="text-muted">Não</span>';const bolsaBadge=s.bolsa?'<span class="badge badge-warning"><i data-lucide="heart"></i>Sim</span>':'<span class="text-muted">Não</span>';const transpBadge=s.transp?'<span class="badge badge-info"><i data-lucide="bus"></i>Sim</span>':'<span class="text-muted">Não</span>';return `<tr><td><div class="person-cell"><div class="avatar" style="background:${avatarColor(s.name)}">${initials(s.name)}</div><div class="person-info"><div class="person-name">${s.name}</div><div class="person-meta">ID: ${s.studentId||'—'}</div></div></div></td><td>${formatDate(s.birth)}</td><td><span style="font-family:monospace;font-size:11.5px">${s.cpf}</span></td><td><strong>${s.matricula}</strong></td><td>${s.studentId||'—'}</td><td>${necBadge}</td><td>${bolsaBadge}</td><td>${transpBadge}</td><td>${s.localidade}</td><td>${s.guardian}</td><td><div class="row-actions"><button title="Editar" onclick="openStudentModal('${s.id}')"><i data-lucide="edit-2"></i></button><button title="Excluir" class="danger" onclick="deleteStudent('${s.id}')"><i data-lucide="trash-2"></i></button></div></td></tr>`;}).join('');}
+  document.getElementById('tableInfo').textContent=`${total>0?start+1:0}-${Math.min(start+state.perPage,total)} de ${total} aluno(s)`;
+  const pag=document.getElementById('pagination');let pagHTML=`<button ${state.studentPage===1?'disabled':''} onclick="goPage(${state.studentPage-1})"><i data-lucide="chevron-left" style="width:13px;height:13px"></i></button>`;
+  for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=state.studentPage-1&&i<=state.studentPage+1))pagHTML+=`<button class="${i===state.studentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;else if(i===state.studentPage-2||i===state.studentPage+2)pagHTML+=`<span style="padding:0 3px;color:var(--text-subtle)">...</span>`;}
+  pagHTML+=`<button ${state.studentPage===pages?'disabled':''} onclick="goPage(${state.studentPage+1})"><i data-lucide="chevron-right" style="width:13px;height:13px"></i></button>`;
+  pag.innerHTML=pagHTML;lucide.createIcons();
+}
+function goPage(p){state.studentPage=p;renderStudents();}
+
+document.getElementById('classFilterSelect').addEventListener('change',e=>{state.selectedClassId=e.target.value;state.studentPage=1;state.studentFilter='all';$$('.filter-chip').forEach(x=>x.classList.remove('active'));$$('.filter-chip')[0].classList.add('active');renderStudents();});
+$$('.filter-chip').forEach(c=>c.addEventListener('click',()=>{$$('.filter-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');state.studentFilter=c.dataset.filter;state.studentPage=1;renderStudents();}));
+$$('.filter-chip')[0].classList.add('active');
+document.getElementById('studentSearch').addEventListener('input',e=>{state.studentSearch=e.target.value;state.studentPage=1;renderStudents();});
+$$('th.sortable').forEach(th=>th.addEventListener('click',()=>{const f=th.dataset.sort;if(state.studentSort.field===f)state.studentSort.dir=state.studentSort.dir==='asc'?'desc':'asc';else state.studentSort={field:f,dir:'asc'};renderStudents();}));
+
+function renderClasses(){
+  const grid=document.getElementById('classesGrid');
+  if(state.classes.length===0){grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i data-lucide="school"></i></div><h3>Nenhuma turma cadastrada</h3><p>Clique em "Nova Turma" para começar</p><button class="btn btn-primary" onclick="openClassModal()"><i data-lucide="plus"></i>Nova Turma</button></div></div>`;lucide.createIcons();return;}
+  grid.innerHTML=state.classes.map(c=>{const students=state.students.filter(s=>s.classId===c.id);const nec=students.filter(s=>s.nec).length;const transp=students.filter(s=>s.transp).length;const color=getClassColor(c.colorIndex);return `<div class="class-card" onclick="viewClassStudents('${c.id}')"><div class="class-card-header"><div class="class-icon" style="background:${color.bg};box-shadow:0 4px 14px ${color.shadow}"><i data-lucide="school"></i></div><div class="class-actions"><button class="class-action-btn" onclick="event.stopPropagation();openClassModal('${c.id}')" title="Editar"><i data-lucide="edit-2"></i></button><button class="class-action-btn danger" onclick="event.stopPropagation();deleteClass('${c.id}')" title="Excluir"><i data-lucide="trash-2"></i></button></div></div><div class="class-name">${c.year} ${c.class}</div><div class="class-school">${c.school} · ${c.shift}</div><div class="class-stats"><div class="class-stat"><div class="class-stat-value">${students.length}</div><div class="class-stat-label">Alunos</div></div><div class="class-stat"><div class="class-stat-value">${nec}</div><div class="class-stat-label">NEC</div></div><div class="class-stat"><div class="class-stat-value">${transp}</div><div class="class-stat-label">Transp.</div></div></div><div class="class-info">${c.p1?`<div class="class-info-row"><i data-lucide="user"></i><span><strong>P1:</strong> ${c.p1}</span></div>`:''}${c.p2?`<div class="class-info-row"><i data-lucide="user"></i><span><strong>P2:</strong> ${c.p2}</span></div>`:'<div class="class-info-row"><i data-lucide="user-x"></i><span style="color:var(--text-subtle)">Sem professor P2</span></div>'}${c.mec?`<div class="class-info-row"><i data-lucide="hash"></i><span><strong>MEC:</strong> ${c.mec}</span></div>`:''}</div></div>`;}).join('');
+  lucide.createIcons();
+}
+function viewClassStudents(id){state.selectedClassId=id;switchViewMat('students');toast('info','Turma selecionada','Visualizando alunos');}
+
+// ========== SERVIDORES ==========
+function openServerModal(id){
+  document.getElementById('serverForm').reset();document.getElementById('serverId').value='';document.getElementById('serverModalTitle').textContent='Cadastrar Servidor';
+  populateCargoSuggestions();
+  populateTipoSuggestions();
+  if(id){
+    const s=state.servers.find(x=>x.id===id);
+    if(s){
+      document.getElementById('serverModalTitle').textContent='Editar Servidor';document.getElementById('serverId').value=s.id;
+      document.getElementById('s-name').value=s.name;document.getElementById('s-cpf').value=s.cpf;document.getElementById('s-birth').value=s.birth;
+      document.getElementById('s-cargo').value=s.cargo||'';document.getElementById('s-type').value=s.type||'';document.getElementById('s-email').value=s.email;
+    }
+  }
+  openModal('serverModal');
+}
+document.getElementById('s-cpf').addEventListener('input',e=>e.target.value=formatCPF(e.target.value));
+
+function saveServer(){
+  const name=document.getElementById('s-name').value.trim(),cpf=document.getElementById('s-cpf').value.trim(),birth=document.getElementById('s-birth').value;
+  const cargo=document.getElementById('s-cargo').value.trim(),type=document.getElementById('s-type').value.trim(),email=document.getElementById('s-email').value.trim();
+  if(!name||!cpf||!birth||!cargo||!type||!email){toast('error','Campos obrigatórios','Preencha os campos *');return;}
+  const data={name,cpf,birth,cargo,type,email};
+  const id=document.getElementById('serverId').value;
+  if(id){const idx=state.servers.findIndex(s=>s.id===id);state.servers[idx]={...state.servers[idx],...data};addActivity(`Servidor <strong>${name}</strong> atualizado`);toast('success','Servidor atualizado',name);}
+  else{data.id=uid();data.createdAt=new Date().toISOString();state.servers.push(data);addActivity(`Novo servidor: <strong>${name}</strong> — ${cargo}`);toast('success','Servidor cadastrado',name);}
+  save();closeModal('serverModal');renderAllServ();
+}
+
+function deleteServer(id){
+  const s=state.servers.find(x=>x.id===id);if(!s)return;
+  document.getElementById('confirmTitle').textContent='Excluir servidor';document.getElementById('confirmMessage').innerHTML=`Excluir <strong>${s.name}</strong>?`;
+  document.getElementById('confirmBtn').onclick=()=>{state.servers=state.servers.filter(x=>x.id!==id);addActivity(`Servidor <strong>${s.name}</strong> excluído`);save();closeModal('confirmModal');renderAllServ();toast('success','Servidor excluído',s.name);};
+  openModal('confirmModal');
+}
+
+function openPositionModal(id){
+  document.getElementById('positionForm').reset();document.getElementById('positionId').value='';document.getElementById('positionModalTitle').textContent='Novo Cargo';
+  populateTipoSuggestions();
+  if(id){
+    const p=state.positions.find(x=>x.id===id);
+    if(p){
+      document.getElementById('positionModalTitle').textContent='Editar Cargo';document.getElementById('positionId').value=p.id;
+      document.getElementById('p-name').value=p.name;document.getElementById('p-type').value=p.type||'';
+      document.getElementById('p-area').value=p.area||'';document.getElementById('p-desc').value=p.desc||'';
+    }
+  }
+  openModal('positionModal');
+}
+
+function savePosition(){
+  const name=document.getElementById('p-name').value.trim(),type=document.getElementById('p-type').value.trim();
+  if(!name||!type){toast('error','Campos obrigatórios','Preencha nome e tipo');return;}
+  const data={name,type,area:document.getElementById('p-area').value.trim(),desc:document.getElementById('p-desc').value.trim()};
+  const id=document.getElementById('positionId').value;
+  if(id){const idx=state.positions.findIndex(p=>p.id===id);state.positions[idx]={...state.positions[idx],...data};addActivity(`Cargo <strong>${name}</strong> atualizado`);toast('success','Cargo atualizado');}
+  else{data.id=uid();data.colorIndex=state.colorIndex;state.colorIndex=(state.colorIndex+1)%positionColors.length;state.positions.push(data);addActivity(`Novo cargo: <strong>${name}</strong>`);toast('success','Cargo criado',name);}
+  save();closeModal('positionModal');renderAllServ();
+}
+
+function deletePosition(id){
+  const p=state.positions.find(x=>x.id===id);if(!p)return;
+  const count=state.servers.filter(s=>s.cargo===p.name).length;
+  document.getElementById('confirmTitle').textContent='Excluir cargo';document.getElementById('confirmMessage').innerHTML=`Excluir <strong>${p.name}</strong>?${count?`<br><br>️ <strong>${count} servidor(es)</strong> com este cargo.`:''}`;
+  document.getElementById('confirmBtn').onclick=()=>{state.positions=state.positions.filter(x=>x.id!==id);addActivity(`Cargo <strong>${p.name}</strong> excluído`);save();closeModal('confirmModal');renderAllServ();toast('success','Cargo excluído');};
+  openModal('confirmModal');
+}
+
+function renderAllServ(){
+  populateCargoFilterSelect();
+  if(state.currentView==='dashboard-serv')renderDashboardServ();
+  if(state.currentView==='servers')renderServers();
+  if(state.currentView==='positions')renderPositions();
+}
+
+function renderDashboardServ(){
+  document.getElementById('kpi-servers').textContent=state.servers.length;
+  document.getElementById('kpi-positions').textContent=state.positions.length;
+  document.getElementById('kpi-efetivos').textContent=state.servers.filter(s=>s.type==='Efetivo').length;
+  document.getElementById('kpi-comissionados').textContent=state.servers.filter(s=>s.type==='Comissionado').length;
+  renderChartsServ();
+  renderActivitiesServ();
+}
+
+function renderActivitiesServ(){
+  const list=document.getElementById('activityListServ');
+  if(state.activities.length===0){list.innerHTML=`<div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-text">Nenhuma atividade</div></div></div>`;return;}
+  list.innerHTML=state.activities.slice(0,8).map(a=>`<div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-text">${a.text}</div><div class="activity-time">${timeAgo(a.time)}</div></div></div>`).join('');
+}
+
+function renderChartsServ(){
+  const ctx1=document.getElementById('chartPositions');if(!ctx1)return;
+  if(state.charts.c3)state.charts.c3.destroy();
+  const cargoCount={};
+  state.servers.forEach(s=>{if(s.cargo)cargoCount[s.cargo]=(cargoCount[s.cargo]||0)+1;});
+  const posData=Object.entries(cargoCount).map(([label,count])=>({label,count})).sort((a,b)=>b.count-a.count);
+  const tc=getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+  const palette=['#059669','#0891b2','#7c3aed','#dc2626','#d97706','#2563eb','#be185d','#0d9488','#f97316','#6366f1'];
+  state.charts.c3=new Chart(ctx1,{type:'bar',data:{labels:posData.length?posData.map(d=>d.label):['Sem dados'],datasets:[{data:posData.length?posData.map(d=>d.count):[0],backgroundColor:palette,borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:tc,precision:0}},x:{ticks:{color:tc,maxRotation:45,minRotation:30},grid:{display:false}}}}});
+  const ctx2=document.getElementById('chartTypes');if(!ctx2)return;
+  if(state.charts.c4)state.charts.c4.destroy();
+  const tipos=['Efetivo','Comissionado','Temporário','Estagiário','Terceirizado'];
+  const tipoData=tipos.map(t=>({label:t,count:state.servers.filter(s=>s.type===t).length})).filter(d=>d.count>0);
+  state.charts.c4=new Chart(ctx2,{type:'doughnut',data:{labels:tipoData.length?tipoData.map(d=>d.label):['Sem dados'],datasets:[{data:tipoData.length?tipoData.map(d=>d.count):[0],backgroundColor:['#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:tc,padding:10,font:{size:11}}}}}});
+}
+
+function populateCargoFilterSelect(){
+  const sel=document.getElementById('cargoFilterSelect');if(!sel)return;
+  const cv=sel.value;
+  const cargos=[...new Set(state.servers.map(s=>s.cargo).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">Todos os Cargos</option>'+cargos.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=cv;
+}
+
+function getFilteredServers(){
+  let list=[...state.servers];
+  if(state.selectedCargo)list=list.filter(s=>s.cargo===state.selectedCargo);
+  if(state.serverFilter!=='all')list=list.filter(s=>s.type===state.serverFilter);
+  if(state.serverSearch){const q=state.serverSearch.toLowerCase();list=list.filter(s=>s.name.toLowerCase().includes(q)||s.cpf.includes(q)||s.email.toLowerCase().includes(q)||(s.cargo||'').toLowerCase().includes(q));}
+  list.sort((a,b)=>{const f=state.serverSort.field;const av=(a[f]||'').toString().toLowerCase(),bv=(b[f]||'').toString().toLowerCase();return state.serverSort.dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);});
+  return list;
+}
+
+function updateServerBanner(){
+  const cargo=state.selectedCargo;
+  if(!cargo){document.getElementById('serverBannerTitle').textContent='Todos os Servidores';document.getElementById('serverBannerDesc').textContent='Visualizando todos os servidores';document.getElementById('serverBannerTotal').textContent=state.servers.length;const cargosUnicos=[...new Set(state.servers.map(s=>s.cargo).filter(Boolean))];document.getElementById('serverBannerCargos').textContent=cargosUnicos.length;const tipos=[...new Set(state.servers.map(s=>s.type))].length;document.getElementById('serverBannerTipos').textContent=tipos;document.getElementById('serversSubtitle').textContent='Gerencie os servidores da rede';}
+  else{const servers=state.servers.filter(s=>s.cargo===cargo);document.getElementById('serverBannerTitle').textContent=cargo;document.getElementById('serverBannerDesc').textContent=`Filtrando por cargo`;document.getElementById('serverBannerTotal').textContent=servers.length;const cargosUnicos=[...new Set(state.servers.map(s=>s.cargo).filter(Boolean))];document.getElementById('serverBannerCargos').textContent=cargosUnicos.length;const tipos=[...new Set(servers.map(s=>s.type))].length;document.getElementById('serverBannerTipos').textContent=tipos;document.getElementById('serversSubtitle').textContent=`Cargo: ${cargo}`;}
+}
+
+function renderServers(){
+  populateCargoFilterSelect();document.getElementById('cargoFilterSelect').value=state.selectedCargo;updateServerBanner();
+  const list=getFilteredServers();const total=list.length;const pages=Math.max(1,Math.ceil(total/state.perPage));
+  if(state.serverPage>pages)state.serverPage=1;const start=(state.serverPage-1)*state.perPage;const page=list.slice(start,start+state.perPage);
+  const tbody=document.getElementById('serversTableBody');
+  if(page.length===0){tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="user-check"></i></div><h3>${state.servers.length===0?'Nenhum servidor cadastrado':'Nenhum resultado'}</h3><p>${state.servers.length===0?'Clique em "Novo Servidor" ou importe do Excel':'Ajuste os filtros'}</p>${state.servers.length===0?`<button class="btn btn-server" onclick="openServerModal()"><i data-lucide="user-plus"></i>Novo Servidor</button>`:''}</div></td></tr>`;}
+  else{tbody.innerHTML=page.map(s=>{const typeBadge=s.type==='Efetivo'?'badge-success':s.type==='Comissionado'?'badge-warning':s.type==='Temporário'?'badge-info':'badge-neutral';return `<tr><td><div class="person-cell"><div class="avatar" style="background:${avatarColor(s.name)}">${initials(s.name)}</div><div class="person-info"><div class="person-name">${s.name}</div><div class="person-meta">${s.cargo||'—'}</div></div></div></td><td><span style="font-family:monospace;font-size:11.5px">${s.cpf}</span></td><td>${formatDate(s.birth)}</td><td><strong>${s.cargo||'—'}</strong></td><td><span class="badge ${typeBadge}">${s.type}</span></td><td><a href="mailto:${s.email}" style="color:var(--primary-light);text-decoration:none;font-size:12px">${s.email}</a></td><td><div class="row-actions"><button title="Editar" onclick="openServerModal('${s.id}')"><i data-lucide="edit-2"></i></button><button title="Excluir" class="danger" onclick="deleteServer('${s.id}')"><i data-lucide="trash-2"></i></button></div></td></tr>`;}).join('');}
+  document.getElementById('serverTableInfo').textContent=`${total>0?start+1:0}-${Math.min(start+state.perPage,total)} de ${total} servidor(es)`;
+  const pag=document.getElementById('serverPagination');let pagHTML=`<button ${state.serverPage===1?'disabled':''} onclick="goServerPage(${state.serverPage-1})"><i data-lucide="chevron-left" style="width:13px;height:13px"></i></button>`;
+  for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=state.serverPage-1&&i<=state.serverPage+1))pagHTML+=`<button class="${i===state.serverPage?'active':''}" onclick="goServerPage(${i})">${i}</button>`;else if(i===state.serverPage-2||i===state.serverPage+2)pagHTML+=`<span style="padding:0 3px;color:var(--text-subtle)">...</span>`;}
+  pagHTML+=`<button ${state.serverPage===pages?'disabled':''} onclick="goServerPage(${state.serverPage+1})"><i data-lucide="chevron-right" style="width:13px;height:13px"></i></button>`;
+  pag.innerHTML=pagHTML;lucide.createIcons();
+}
+function goServerPage(p){state.serverPage=p;renderServers();}
+
+document.getElementById('cargoFilterSelect').addEventListener('change',e=>{state.selectedCargo=e.target.value;state.serverPage=1;state.serverFilter='all';$$('.filter-chip').forEach(x=>x.classList.remove('active','server-active'));$$('.filter-chip')[0].classList.add('active');renderServers();});
+$$('.filter-chip').forEach(c=>c.addEventListener('click',()=>{$$('.filter-chip').forEach(x=>x.classList.remove('active','server-active'));c.classList.add('active');state.serverFilter=c.dataset.filter;state.serverPage=1;renderServers();}));
+document.getElementById('serverSearch').addEventListener('input',e=>{state.serverSearch=e.target.value;state.serverPage=1;renderServers();});
+
+function renderPositions(){
+  const grid=document.getElementById('positionsGrid');
+  if(state.positions.length===0){grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i data-lucide="briefcase"></i></div><h3>Nenhum cargo cadastrado</h3><p>Clique em "Novo Cargo" para começar</p><button class="btn btn-server" onclick="openPositionModal()"><i data-lucide="plus"></i>Novo Cargo</button></div></div>`;lucide.createIcons();return;}
+  grid.innerHTML=state.positions.map(p=>{
+    const servers = state.servers.filter(s=>s.cargo===p.name);
+    const color=getPositionColor(p.colorIndex);
+    const typeIcon=p.type==='Efetivo'?'shield-check':p.type==='Comissionado'?'award':p.type==='Temporário'?'clock':p.type==='Estagiário'?'graduation-cap':'briefcase';
+    return `<div class="class-card" onclick="viewPositionServers('${p.id}')">
+      <div class="class-card-header">
+        <div class="class-icon" style="background:${color.bg};box-shadow:0 4px 14px ${color.shadow}"><i data-lucide="briefcase"></i></div>
+        <div class="class-actions">
+          <button class="class-action-btn" onclick="event.stopPropagation();openPositionModal('${p.id}')" title="Editar"><i data-lucide="edit-2"></i></button>
+          <button class="class-action-btn danger" onclick="event.stopPropagation();deletePosition('${p.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <div class="class-name">${p.name}</div>
+      <div class="class-school"><span class="badge badge-server"><i data-lucide="${typeIcon}"></i>${p.type}</span>${p.area?` · ${p.area}`:''}</div>
+      <div class="class-stats">
+        <div class="class-stat"><div class="class-stat-value">${servers.length}</div><div class="class-stat-label">Servidores</div></div>
+        <div class="class-stat"><div class="class-stat-value">${servers.filter(s=>s.type==='Efetivo').length}</div><div class="class-stat-label">Efetivos</div></div>
+        <div class="class-stat"><div class="class-stat-value">${servers.filter(s=>s.type!=='Efetivo').length}</div><div class="class-stat-label">Outros</div></div>
+      </div>
+      ${p.desc?`<div class="class-info"><div class="class-info-row"><i data-lucide="file-text"></i><span style="font-size:11px;color:var(--text-subtle)">${p.desc.substring(0,80)}${p.desc.length>80?'...':''}</span></div></div>`:''}
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+function viewPositionServers(id){
+  const p = state.positions.find(x=>x.id===id);
+  if(p){state.selectedCargo=p.name;switchViewServ('servers');toast('info','Cargo selecionado','Visualizando servidores');}
+}
+
+// ========== IMPORT/EXPORT ==========
+const uploadZone=document.getElementById('uploadZone');const fileInput=document.getElementById('fileInput');
+uploadZone.addEventListener('click',()=>fileInput.click());
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('dragover');if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+
+const uploadZoneServ=document.getElementById('uploadZoneServ');const fileInputServ=document.getElementById('fileInputServ');
+uploadZoneServ.addEventListener('click',()=>fileInputServ.click());
+uploadZoneServ.addEventListener('dragover',e=>{e.preventDefault();uploadZoneServ.classList.add('dragover');});
+uploadZoneServ.addEventListener('dragleave',()=>uploadZoneServ.classList.remove('dragover'));
+uploadZoneServ.addEventListener('drop',e=>{e.preventDefault();uploadZoneServ.classList.remove('dragover');if(e.dataTransfer.files.length)handleFileServ(e.dataTransfer.files[0]);});
+fileInputServ.addEventListener('change',e=>{if(e.target.files[0])handleFileServ(e.target.files[0]);});
+
+function handleFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array',cellDates:true,cellStyles:false});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{raw:false,dateNF:'yyyy-mm-dd'});
+      if(rows.length===0){toast('error','Planilha vazia');return;}
+      const processed=rows.map((row,idx)=>{const issues=[];const name=parseString(row['NOME DO ALUNO']||row['Nome do Aluno']||row.nome||row.Nome);if(!name)issues.push('Nome vazio');const birth=parseExcelDate(row['DATA DE NASCIMENTO']||row['Data de Nascimento']||row.nascimento);if(!birth)issues.push('Data inválida');const cpf=parseCPF(row.CPF||row.cpf);if(!cpf)issues.push('CPF vazio');const matricula=parseString(row['N° MATRICULA']||row['N° Matrícula']||row.Matricula);if(!matricula)issues.push('Matrícula vazia');const studentId=parseString(row['N° ID']||row['Nº ID']);const localidade=parseString(row.LOCALIDADE||row.Localidade);if(!localidade)issues.push('Localidade vazia');const guardian=parseString(row.RESPONSÁVEL||row.Responsável);if(!guardian)issues.push('Responsável vazio');const nec=parseBoolean(row['NEC. ESCPECIAL']||row['NEC. ESPECIAL']||row.NEC);const bolsa=parseBoolean(row['BOLSA FAMÍLIA']||row['Bolsa Família']||row.bolsa);const transp=parseBoolean(row.TRANSPORTE||row.Transporte||row.transp);return{name,birth,cpf,matricula,studentId,localidade,guardian,nec,bolsa,transp,issues,_rowIndex:idx+2};});
+      const validCount=processed.filter(r=>r.issues.length===0).length;
+      const preview=document.getElementById('importPreview');preview.classList.remove('hidden');
+      preview.innerHTML=`<div style="padding:14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:10px"><strong style="color:var(--success)">✓ ${rows.length} aluno(s) lido(s)</strong><div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">Arquivo: ${file.name} · Válidos: ${validCount}</div></div><div style="margin-bottom:10px"><label class="form-label" style="margin-bottom:6px">Vincular à turma:</label><select class="form-control" id="importClassSelect" style="width:100%"><option value="">— Sem turma —</option>${state.classes.map(c=>`<option value="${c.id}">${c.year} ${c.class} — ${c.school}</option>`).join('')}</select></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-primary" id="btnConfirmImport"><i data-lucide="check"></i>Importar ${validCount} aluno(s)</button><button class="btn btn-secondary" onclick="document.getElementById('importPreview').classList.add('hidden')"><i data-lucide="x"></i>Cancelar</button></div>`;
+      lucide.createIcons();window._pendingImport=processed;
+      document.getElementById('btnConfirmImport').addEventListener('click',()=>{const classId=document.getElementById('importClassSelect').value;importStudentData(window._pendingImport,classId);});
+    }catch(err){toast('error','Erro ao ler arquivo',err.message);console.error(err);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleFileServ(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array',cellDates:true,cellStyles:false});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{raw:false,dateNF:'yyyy-mm-dd'});
+      if(rows.length===0){toast('error','Planilha vazia');return;}
+      const processed=rows.map((row,idx)=>{const issues=[];const name=parseString(row['NOME DOS SERVIDORES']||row['NOME']||row.nome||row.Nome);if(!name)issues.push('Nome vazio');const cpf=parseCPF(row.CPF||row.cpf);if(!cpf)issues.push('CPF vazio');const birth=parseExcelDate(row['DATA NASC.']||row['DATA NASCIMENTO']||row['DATA DE NASCIMENTO']||row.nascimento);if(!birth)issues.push('Data inválida');const cargo=parseString(row['CARGO / FUNÇÃO']||row['CARGO']||row.cargo);if(!cargo)issues.push('Cargo vazio');const tipo=parseString(row['TIPO DE CARGO']||row['TIPO']||row.tipo);if(!tipo)issues.push('Tipo vazio');const email=parseString(row.EMAIL||row.email);if(!email)issues.push('Email vazio');return{name,cpf,birth,cargo,tipo,email,issues,_rowIndex:idx+2};});
+      const validCount=processed.filter(r=>r.issues.length===0).length;
+      const preview=document.getElementById('importPreviewServ');preview.classList.remove('hidden');
+      preview.innerHTML=`<div style="padding:14px;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.2);border-radius:8px;margin-bottom:10px"><strong style="color:#059669">✓ ${rows.length} servidor(es) lido(s)</strong><div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">Arquivo: ${file.name} · Válidos: ${validCount}</div></div><div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:10px"><table class="import-preview-table"><thead><tr><th>Linha</th><th>Nome</th><th>CPF</th><th>Cargo</th><th>Tipo</th><th>Status</th></tr></thead><tbody>${processed.slice(0,12).map(r=>`<tr><td>${r._rowIndex}</td><td>${r.name||'<em style="color:var(--danger)">vazio</em>'}</td><td style="font-family:monospace">${r.cpf||'—'}</td><td>${r.cargo||'—'}</td><td>${r.tipo||'—'}</td><td>${r.issues.length===0?'<span class="import-status ok">✓ OK</span>':'<span class="import-status warn">⚠ '+r.issues.join(', ')+'</span>'}</td></tr>`).join('')}</tbody></table></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-server" id="btnConfirmImportServ"><i data-lucide="check"></i>Importar ${validCount} servidor(es)</button><button class="btn btn-secondary" onclick="document.getElementById('importPreviewServ').classList.add('hidden')"><i data-lucide="x"></i>Cancelar</button></div>`;
+      lucide.createIcons();window._pendingImportServ=processed;
+      document.getElementById('btnConfirmImportServ').addEventListener('click',()=>importServerData(window._pendingImportServ));
+    }catch(err){toast('error','Erro ao ler arquivo',err.message);console.error(err);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function importStudentData(rows,classId){
+  let imported=0,skipped=0;
+  rows.forEach(r=>{if(!r.name){skipped++;return;}state.students.push({id:uid(),name:r.name,birth:r.birth,cpf:r.cpf,matricula:r.matricula,studentId:r.studentId,classId:classId||state.selectedClassId||'',localidade:r.localidade,guardian:r.guardian,nec:r.nec,bolsa:r.bolsa,transp:r.transp,createdAt:new Date().toISOString()});imported++;});
+  save();addActivity(`<strong>${imported} aluno(s)</strong> importado(s)`);toast('success','Importação concluída',`${imported} aluno(s) adicionado(s)`);document.getElementById('importPreview').classList.add('hidden');renderAllMat();
+}
+
+function importServerData(rows){
+  let imported=0,skipped=0;
+  rows.forEach(r=>{if(!r.name){skipped++;return;}state.servers.push({id:uid(),name:r.name,cpf:r.cpf,birth:r.birth,cargo:r.cargo,type:r.tipo||'Efetivo',email:r.email,createdAt:new Date().toISOString()});imported++;});
+  save();addActivity(`<strong>${imported} servidor(es)</strong> importado(s)`);toast('success','Importação concluída',`${imported} servidor(es) adicionado(s)`);document.getElementById('importPreviewServ').classList.add('hidden');renderAllServ();
+}
+
+function exportStudentsExcel(){if(state.students.length===0){toast('warning','Sem dados');return;}const rows=state.students.map(s=>{const c=state.classes.find(x=>x.id===s.classId);return{'NOME DO ALUNO':s.name,'DATA DE NASCIMENTO':s.birth,'CPF':s.cpf,'N° MATRICULA':s.matricula,'N° ID':s.studentId||'','TURMA':c?`${c.year} ${c.class}`:'','ESCOLA':c?c.school:'','NEC. ESCPECIAL':s.nec?'sim':'não','BOLSA FAMÍLIA':s.bolsa?'sim':'não','TRANSPORTE':s.transp?'sim':'não','LOCALIDADE':s.localidade,'RESPONSÁVEL':s.guardian};});const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Alunos');XLSX.writeFile(wb,`alunos_${new Date().toISOString().slice(0,10)}.xlsx`);toast('success','Excel exportado');}
+
+function exportServersExcel(){if(state.servers.length===0){toast('warning','Sem dados');return;}const rows=state.servers.map(s=>{return{'NOME DOS SERVIDORES':s.name,'CPF':s.cpf,'DATA NASC.':s.birth,'CARGO / FUNÇÃO':s.cargo||'','TIPO DE CARGO':s.type,'EMAIL':s.email};});const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:30},{wch:18},{wch:12},{wch:25},{wch:15},{wch:30}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Servidores');XLSX.writeFile(wb,`servidores_${new Date().toISOString().slice(0,10)}.xlsx`);toast('success','Excel exportado');}
+
+function exportStudentsPDF(){if(state.students.length===0){toast('warning','Sem dados');return;}const{jsPDF}=window.jspdf;const doc=new jsPDF();const pw=doc.internal.pageSize.getWidth();const m=14;doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(30,64,175);doc.text('ESTADO DO CEARÁ',pw/2,14,{align:'center'});doc.setFontSize(11);doc.setTextColor(0,0,0);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,22,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,116,139);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,29,{align:'center'});doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(30,64,175);doc.text('FICHA DE MATRÍCULA · 2026',pw/2,36,{align:'center'});doc.setDrawColor(30,64,175);doc.setLineWidth(0.5);doc.line(m,40,pw-m,40);const rows=state.students.map((s,i)=>{const c=state.classes.find(x=>x.id===s.classId);return[i+1,s.name.toUpperCase(),formatDate(s.birth),s.cpf,s.matricula,c?`${c.year} ${c.class}`:'—',s.nec?'Sim':'Não',s.bolsa?'Sim':'Não',s.transp?'Sim':'Não',s.localidade.toUpperCase(),s.guardian.toUpperCase()];});doc.autoTable({startY:44,head:[['Nº','Nome','Nasc.','CPF','Matrícula','Turma','NEC','Bolsa','Transp.','Localidade','Responsável']],body:rows,styles:{fontSize:6.5,cellPadding:2},headStyles:{fillColor:[30,64,175],textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});doc.save(`alunos_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','PDF gerado');}
+
+function exportServersPDF(){if(state.servers.length===0){toast('warning','Sem dados');return;}const{jsPDF}=window.jspdf;const doc=new jsPDF();const pw=doc.internal.pageSize.getWidth();const m=14;doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(5,150,105);doc.text('ESTADO DO CEARÁ',pw/2,14,{align:'center'});doc.setFontSize(11);doc.setTextColor(0,0,0);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,22,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,116,139);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,29,{align:'center'});doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(5,150,105);doc.text('RELAÇÃO DE SERVIDORES · 2026',pw/2,36,{align:'center'});doc.setDrawColor(5,150,105);doc.setLineWidth(0.5);doc.line(m,40,pw-m,40);const rows=state.servers.map((s,i)=>{return[i+1,s.name.toUpperCase(),s.cpf,formatDate(s.birth),(s.cargo||'—').toUpperCase(),s.type.toUpperCase(),s.email];});doc.autoTable({startY:44,head:[['Nº','Nome','CPF','Nasc.','Cargo/Função','Tipo','Email']],body:rows,styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[5,150,105],textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});doc.save(`servidores_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','PDF gerado');}
+
+function exportCSV(){if(state.students.length===0){toast('warning','Sem dados');return;}const header=['NOME DO ALUNO','DATA DE NASCIMENTO','CPF','N° MATRICULA','N° ID','TURMA','NEC. ESCPECIAL','BOLSA FAMÍLIA','TRANSPORTE','LOCALIDADE','RESPONSÁVEL'];const rows=state.students.map(s=>{const c=state.classes.find(x=>x.id===s.classId);return[s.name,s.birth,s.cpf,s.matricula,s.studentId||'',c?`${c.year} ${c.class}`:'',s.nec?'sim':'não',s.bolsa?'sim':'não',s.transp?'sim':'não',s.localidade,s.guardian];});const csv=[header,...rows].map(r=>r.join(';')).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`alunos_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);toast('success','CSV exportado');}
+
+function exportJSON(){const data={students:state.students,classes:state.classes,servers:state.servers,positions:state.positions,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`backup_completo_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);toast('success','Backup completo gerado');}
+
+function downloadTemplate(){const ws=XLSX.utils.aoa_to_sheet([['NOME DO ALUNO','DATA DE NASCIMENTO','CPF','N° MATRICULA','N° ID','NEC. ESCPECIAL','BOLSA FAMÍLIA','TRANSPORTE','LOCALIDADE','RESPONSÁVEL'],['Maria Silva','15/03/2015','123.456.789-00','2026001','A001','não','sim','não','Centro','João Silva']]);ws['!cols']=[{wch:25},{wch:15},{wch:18},{wch:15},{wch:10},{wch:15},{wch:15},{wch:12},{wch:20},{wch:20}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Alunos');XLSX.writeFile(wb,'modelo_alunos.xlsx');toast('success','Modelo baixado');}
+
+function downloadServerTemplate(){const ws=XLSX.utils.aoa_to_sheet([['NOME DOS SERVIDORES','CPF','DATA NASC.','CARGO / FUNÇÃO','TIPO DE CARGO','EMAIL'],['José Silva','111.222.333-44','10/08/1975','Professor P1','Efetivo','jose@educacao.ce.gov.br'],['Maria Santos','222.333.444-55','15/03/1980','Diretor Escolar','Comissionado','maria@educacao.ce.gov.br']]);ws['!cols']=[{wch:30},{wch:18},{wch:12},{wch:25},{wch:15},{wch:30}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Servidores');XLSX.writeFile(wb,'modelo_servidores.xlsx');toast('success','Modelo baixado');}
+
+function generateStudentReport(type){
+  if(state.students.length===0){toast('warning','Sem dados');return;}
+  const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const pw=doc.internal.pageSize.getWidth();const m=14;const cw=pw-(m*2);
+  const BLUE=[30,64,175],BLACK=[0,0,0],GRAY=[100,116,139];
+  let y=14;
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...BLUE);doc.text('ESTADO DO CEARÁ',pw/2,y,{align:'center'});y+=8;
+  doc.setFontSize(11);doc.setTextColor(...BLACK);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,y,{align:'center'});y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,y,{align:'center'});y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...BLUE);doc.text('FICHA DE MATRÍCULA · 2026',pw/2,y,{align:'center'});y+=5;
+  doc.setDrawColor(...BLUE);doc.setLineWidth(0.5);doc.line(m,y,pw-m,y);y+=10;
+  let filtered=[...state.students],title='RELAÇÃO DE ALUNOS';
+  if(type==='nec'){filtered=filtered.filter(s=>s.nec);title='ALUNOS COM NEC. ESPECIAL';}
+  if(type==='bolsa'){filtered=filtered.filter(s=>s.bolsa);title='ALUNOS — BOLSA FAMÍLIA';}
+  if(type==='transporte'){filtered=filtered.filter(s=>s.transp);title='ALUNOS — TRANSPORTE ESCOLAR';}
+  if(type==='turma'){
+    const classesWithStudents=state.classes.filter(c=>state.students.some(s=>s.classId===c.id));
+    if(classesWithStudents.length===0){toast('warning','Sem turmas com alunos');return;}
+    classesWithStudents.forEach((cls,idx)=>{if(idx>0)doc.addPage();y=14;
+      doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...BLUE);doc.text('ESTADO DO CEARÁ',pw/2,y,{align:'center'});y+=8;
+      doc.setFontSize(11);doc.setTextColor(...BLACK);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,y,{align:'center'});y+=7;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,y,{align:'center'});y+=8;
+      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...BLUE);doc.text('FICHA DE MATRÍCULA · 2026',pw/2,y,{align:'center'});y+=5;
+      doc.setDrawColor(...BLUE);doc.setLineWidth(0.5);doc.line(m,y,pw-m,y);y+=10;
+      const boxH=44;doc.setDrawColor(200,200,200);doc.setLineWidth(0.2);doc.roundedRect(m,y,cw,boxH,2,2);
+      const studentsInClass=state.students.filter(s=>s.classId===cls.id);
+      const today=new Date();const todayStr=`${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
+      const col1X=m+4,col2X=m+cw/2+4,lw=30,vx1=col1X+lw,vx2=col2X+lw,mvw=(cw/2)-lw-8;
+      let ry=y+7;
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...BLACK);
+      doc.text('Escola:',col1X,ry);doc.setFont('helvetica','normal');doc.text(cls.school.toUpperCase(),vx1,ry,{maxWidth:mvw});
+      ry+=7;doc.setFont('helvetica','bold');doc.text('Ano/Série:',col1X,ry);doc.setFont('helvetica','normal');doc.text(cls.year,vx1,ry);
+      ry+=7;doc.setFont('helvetica','bold');doc.text('Turno:',col1X,ry);doc.setFont('helvetica','normal');doc.text(cls.shift.toUpperCase(),vx1,ry);
+      ry+=7;doc.setFont('helvetica','bold');doc.text('Professor P2:',col1X,ry);doc.setFont('helvetica','normal');doc.text(cls.p2?cls.p2.toUpperCase():'—',vx1,ry,{maxWidth:mvw});
+      ry=y+7;doc.setFont('helvetica','bold');doc.text('Código MEC:',col2X,ry);doc.setFont('helvetica','normal');doc.text(cls.mec||'—',vx2,ry);
+      ry+=7;doc.setFont('helvetica','bold');doc.text('Turma:',col2X,ry);doc.setFont('helvetica','normal');doc.text(cls.class.toUpperCase(),vx2,ry);
+      ry+=7;doc.setFont('helvetica','bold');doc.text('Professor P1:',col2X,ry);doc.setFont('helvetica','normal');doc.text(cls.p1?cls.p1.toUpperCase():'—',vx2,ry,{maxWidth:mvw});
+      ry+=7;doc.setFont('helvetica','bold');doc.text('Data de Impressão:',col2X,ry);doc.setFont('helvetica','normal');doc.text(todayStr,vx2,ry);
+      y+=boxH+10;
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...BLUE);doc.text(`RELAÇÃO DE ALUNOS — ${cls.year.toUpperCase()} — TURMA ${cls.class.toUpperCase()}`,m,y);y+=8;
+      const tRows=studentsInClass.map((s,i)=>[i+1,s.name.toUpperCase(),formatDate(s.birth),s.cpf,s.matricula,s.nec?'Sim':'Não',s.bolsa?'Sim':'Não',s.transp?'Sim':'Não',s.localidade.toUpperCase(),s.guardian.toUpperCase()]);
+      doc.autoTable({startY:y,head:[['Nº','Nome','Nasc.','CPF','Matrícula','NEC','Bolsa','Transp.','Localidade','Responsável']],body:tRows,styles:{fontSize:7,cellPadding:2,halign:'left'},headStyles:{fillColor:BLUE,textColor:[255,255,255],fontStyle:'bold',halign:'center'},columnStyles:{0:{halign:'center',cellWidth:10},5:{halign:'center',cellWidth:12},6:{halign:'center',cellWidth:12},7:{halign:'center',cellWidth:14}},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});
+      const fy=doc.lastAutoTable.finalY+25;if(fy<270){doc.setDrawColor(150);doc.setLineWidth(0.3);doc.line(m,fy,m+70,fy);doc.line(pw-m-70,fy,pw-m,fy);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BLACK);doc.text('Coordenador(a) de Gestão',m+35,fy+5,{align:'center'});doc.text('Diretor(a) da Escola',pw-m-35,fy+5,{align:'center'});}
+    });
+    doc.save(`turmas_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','Relatório gerado');addActivity('Relatório de turmas gerado');return;
+  }
+  if(filtered.length===0){toast('warning','Sem dados');return;}
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...BLUE);doc.text(title,m,y);y+=4;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text(`Total: ${filtered.length} aluno(s)`,m,y);y+=6;
+  const tRows=filtered.map((s,i)=>{const c=state.classes.find(x=>x.id===s.classId);return[i+1,s.name.toUpperCase(),formatDate(s.birth),s.cpf,s.matricula,c?`${c.year} ${c.class}`:'—',s.nec?'Sim':'Não',s.bolsa?'Sim':'Não',s.transp?'Sim':'Não',s.localidade.toUpperCase(),s.guardian.toUpperCase()];});
+  doc.autoTable({startY:y,head:[['Nº','Nome','Nasc.','CPF','Matrícula','Turma','NEC','Bolsa','Transp.','Localidade','Responsável']],body:tRows,styles:{fontSize:6.5,cellPadding:2},headStyles:{fillColor:BLUE,textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});
+  const fy=doc.lastAutoTable.finalY+20;if(fy<270){doc.setDrawColor(150);doc.setLineWidth(0.3);doc.line(m,fy,m+70,fy);doc.line(pw-m-70,fy,pw-m,fy);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BLACK);doc.text('Coordenador(a) de Gestão',m+35,fy+5,{align:'center'});doc.text('Diretor(a) da Escola',pw-m-35,fy+5,{align:'center'});}
+  doc.save(`${type}_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','Relatório gerado');addActivity(`Relatório <strong>${title}</strong> gerado`);
+}
+
+function generateServerReport(type){
+  if(state.servers.length===0){toast('warning','Sem dados');return;}
+  const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','a4');const pw=doc.internal.pageSize.getWidth();const m=14;
+  const GREEN=[5,150,105],BLACK=[0,0,0],GRAY=[100,116,139];
+  let y=14;
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...GREEN);doc.text('ESTADO DO CEARÁ',pw/2,y,{align:'center'});y+=8;
+  doc.setFontSize(11);doc.setTextColor(...BLACK);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,y,{align:'center'});y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,y,{align:'center'});y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...GREEN);doc.text('RELAÇÃO DE SERVIDORES · 2026',pw/2,y,{align:'center'});y+=5;
+  doc.setDrawColor(...GREEN);doc.setLineWidth(0.5);doc.line(m,y,pw-m,y);y+=10;
+  let filtered=[...state.servers],title='RELAÇÃO DE SERVIDORES';
+  if(type==='cargo'){
+    const cargos=[...new Set(state.servers.map(s=>s.cargo).filter(Boolean))];
+    if(cargos.length===0){toast('warning','Sem servidores');return;}
+    cargos.forEach((cargo,idx)=>{if(idx>0)doc.addPage();y=14;
+      doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...GREEN);doc.text('ESTADO DO CEARÁ',pw/2,y,{align:'center'});y+=8;
+      doc.setFontSize(11);doc.setTextColor(...BLACK);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,y,{align:'center'});y+=7;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,y,{align:'center'});y+=8;
+      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...GREEN);doc.text('RELAÇÃO DE SERVIDORES · 2026',pw/2,y,{align:'center'});y+=5;
+      doc.setDrawColor(...GREEN);doc.setLineWidth(0.5);doc.line(m,y,pw-m,y);y+=10;
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...GREEN);doc.text(`CARGO: ${cargo.toUpperCase()}`,m,y);y+=8;
+      const serversInCargo=state.servers.filter(s=>s.cargo===cargo);
+      const tRows=serversInCargo.map((s,i)=>[i+1,s.name.toUpperCase(),s.cpf,formatDate(s.birth),s.type.toUpperCase(),s.email]);
+      doc.autoTable({startY:y,head:[['Nº','Nome','CPF','Nasc.','Tipo','Email']],body:tRows,styles:{fontSize:7.5,cellPadding:2},headStyles:{fillColor:GREEN,textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});
+      const fy=doc.lastAutoTable.finalY+20;if(fy<270){doc.setDrawColor(150);doc.setLineWidth(0.3);doc.line(m,fy,m+70,fy);doc.line(pw-m-70,fy,pw-m,fy);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BLACK);doc.text('Secretário(a) de Educação',m+35,fy+5,{align:'center'});doc.text('Diretor(a) de RH',pw-m-35,fy+5,{align:'center'});}
+    });
+    doc.save(`servidores_por_cargo_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','Relatório gerado');addActivity('Relatório por cargo gerado');return;
+  }
+  if(type==='tipo'){
+    const tipos=[...new Set(state.servers.map(s=>s.type))];
+    tipos.forEach((tipo,idx)=>{if(idx>0)doc.addPage();y=14;
+      doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...GREEN);doc.text('ESTADO DO CEARÁ',pw/2,y,{align:'center'});y+=8;
+      doc.setFontSize(11);doc.setTextColor(...BLACK);doc.text('PREFEITURA MUNICIPAL DE ITAPIPOCA',pw/2,y,{align:'center'});y+=7;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text('SECRETARIA DE EDUCAÇÃO BÁSICA',pw/2,y,{align:'center'});y+=8;
+      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...GREEN);doc.text('RELAÇÃO DE SERVIDORES · 2026',pw/2,y,{align:'center'});y+=5;
+      doc.setDrawColor(...GREEN);doc.setLineWidth(0.5);doc.line(m,y,pw-m,y);y+=10;
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...GREEN);doc.text(`TIPO DE CARGO: ${tipo.toUpperCase()}`,m,y);y+=8;
+      const serversByType=state.servers.filter(s=>s.type===tipo);
+      const tRows=serversByType.map((s,i)=>[i+1,s.name.toUpperCase(),s.cpf,formatDate(s.birth),(s.cargo||'—').toUpperCase(),s.email]);
+      doc.autoTable({startY:y,head:[['Nº','Nome','CPF','Nasc.','Cargo/Função','Email']],body:tRows,styles:{fontSize:7.5,cellPadding:2},headStyles:{fillColor:GREEN,textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});
+      const fy=doc.lastAutoTable.finalY+20;if(fy<270){doc.setDrawColor(150);doc.setLineWidth(0.3);doc.line(m,fy,m+70,fy);doc.line(pw-m-70,fy,pw-m,fy);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BLACK);doc.text('Secretário(a) de Educação',m+35,fy+5,{align:'center'});doc.text('Diretor(a) de RH',pw-m-35,fy+5,{align:'center'});}
+    });
+    doc.save(`servidores_por_tipo_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','Relatório gerado');addActivity('Relatório por tipo gerado');return;
+  }
+  if(filtered.length===0){toast('warning','Sem dados');return;}
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...GREEN);doc.text(title,m,y);y+=4;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GRAY);doc.text(`Total: ${filtered.length} servidor(es)`,m,y);y+=6;
+  const tRows=filtered.map((s,i)=>{return[i+1,s.name.toUpperCase(),s.cpf,formatDate(s.birth),(s.cargo||'—').toUpperCase(),s.type.toUpperCase(),s.email];});
+  doc.autoTable({startY:y,head:[['Nº','Nome','CPF','Nasc.','Cargo/Função','Tipo','Email']],body:tRows,styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:GREEN,textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,250,252]},margin:{left:m,right:m}});
+  const fy=doc.lastAutoTable.finalY+20;if(fy<270){doc.setDrawColor(150);doc.setLineWidth(0.3);doc.line(m,fy,m+70,fy);doc.line(pw-m-70,fy,pw-m,fy);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BLACK);doc.text('Secretário(a) de Educação',m+35,fy+5,{align:'center'});doc.text('Diretor(a) de RH',pw-m-35,fy+5,{align:'center'});}
+  doc.save(`servidores_${new Date().toISOString().slice(0,10)}.pdf`);toast('success','Relatório gerado');addActivity('Relatório de servidores gerado');
+}
+
+function saveSettings(){localStorage.setItem('plat_settings',JSON.stringify({secretaria:document.getElementById('setSecretaria').value,municipio:document.getElementById('setMunicipio').value,estado:document.getElementById('setEstado').value,ano:document.getElementById('setAno').value}));toast('success','Configurações salvas');}
+function resetSystem(){if(!getSession()){toast('error','Acesso negado','Faça login novamente.');return;} if(!confirm('⚠️ ATENÇÃO: Todos os dados serão apagados permanentemente. Deseja continuar?')) return; if(!confirm('Esta ação não pode ser desfeita. Confirma novamente?')) return;{sessionStorage.clear(); localStorage.removeItem('plat_credentials'); localStorage.removeItem('plat_credentials_v2'); localStorage.removeItem('plat_settings'); localStorage.removeItem('plat_brasao'); localStorage.removeItem('plat_theme'); localStorage.removeItem('plat_colorIndex'); location.reload();}}
+
+document.getElementById('globalSearchMat').addEventListener('input',e=>{const q=e.target.value.toLowerCase();if(!q)return;const match=state.students.find(s=>s.name.toLowerCase().includes(q));if(match){state.selectedClassId=match.classId||'';switchViewMat('students');document.getElementById('studentSearch').value=q;state.studentSearch=q;renderStudents();}});
+document.getElementById('globalSearchServ').addEventListener('input',e=>{const q=e.target.value.toLowerCase();if(!q)return;const match=state.servers.find(s=>s.name.toLowerCase().includes(q));if(match){state.selectedCargo=match.cargo||'';switchViewServ('servers');document.getElementById('serverSearch').value=q;state.serverSearch=q;renderServers();}});
+
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();if(state.currentSystem==='matriculas')document.getElementById('globalSearchMat').focus();else if(state.currentSystem==='servidores')document.getElementById('globalSearchServ').focus();}if(e.key==='Escape')$$('.modal-overlay.active').forEach(m=>closeModal(m.id));});
+
+lucide.createIcons();
+
+// Inicializar camada de segurança e só então verificar a sessão.
+initializeSecurity().then(()=>checkSession()).catch(()=>{
+  document.getElementById('loginScreen').style.display='flex';
+});
+
+if(state.classes.length===0&&state.students.length===0&&state.servers.length===0&&state.positions.length===0){
+  const demoClasses=[
+    {id:uid(),school:'EEB ANTÔNIO PINHEIRO DE FREITAS',mec:'23038330',year:'5º Ano',class:'ÚNICA',shift:'Tempo Integral',p1:'José Valtoni Rodrigues dos Santos',p2:'Marcos Antônio Oliveira Ferreira',colorIndex:0},
+    {id:uid(),school:'EEB ANTÔNIO PINHEIRO DE FREITAS',mec:'23038330',year:'1º Ano',class:'A',shift:'Matutino',p1:'Ana Paula',p2:'Carlos Silva',colorIndex:1}
+  ];
+  state.classes=demoClasses;state.colorIndex=2;
+  const demoStudents=[
+    {name:'Ana Beatriz Silva',birth:'2015-03-15',cpf:'123.456.789-00',matricula:'2026001',studentId:'A001',classId:demoClasses[0].id,localidade:'Bom Jesus',guardian:'Maria Silva',nec:false,bolsa:true,transp:false},
+    {name:'Bruno Costa Santos',birth:'2014-07-22',cpf:'234.567.890-11',matricula:'2026002',studentId:'A002',classId:demoClasses[0].id,localidade:'Baleia',guardian:'João Santos',nec:true,bolsa:false,transp:true},
+    {name:'Carla Mendes Oliveira',birth:'2015-11-08',cpf:'345.678.901-22',matricula:'2026003',studentId:'A003',classId:demoClasses[1].id,localidade:'Bom Jesus',guardian:'Paula Oliveira',nec:false,bolsa:true,transp:false}
+  ];
+  demoStudents.forEach(s=>{s.id=uid();s.createdAt=new Date().toISOString();});
+  state.students=demoStudents;
+  const demoPositions=[
+    {id:uid(),name:'Professor P1',type:'Efetivo',area:'Pedagógica',desc:'Professor regente de turma',colorIndex:0},
+    {id:uid(),name:'Professor P2',type:'Efetivo',area:'Pedagógica',desc:'Professor auxiliar',colorIndex:1},
+    {id:uid(),name:'Diretor Escolar',type:'Comissionado',area:'Gestão',desc:'Direção da unidade escolar',colorIndex:2},
+    {id:uid(),name:'Coordenador Pedagógico',type:'Efetivo',area:'Pedagógica',desc:'Coordenação pedagógica',colorIndex:3}
+  ];
+  state.positions=demoPositions;state.colorIndex=4;
+  const demoServers=[
+    {name:'José Valtoni Rodrigues dos Santos',cpf:'111.222.333-44',birth:'1975-05-10',cargo:'Professor P1',type:'Efetivo',email:'jose.valtoni@educacao.itapipoca.ce.gov.br'},
+    {name:'Marcos Antônio Oliveira Ferreira',cpf:'222.333.444-55',birth:'1980-08-22',cargo:'Professor P2',type:'Efetivo',email:'marcos.ferreira@educacao.itapipoca.ce.gov.br'},
+    {name:'Ana Paula Santos Lima',cpf:'333.444.555-66',birth:'1982-03-15',cargo:'Diretor Escolar',type:'Comissionado',email:'ana.lima@educacao.itapipoca.ce.gov.br'},
+    {name:'Carlos Silva Souza',cpf:'444.555.666-77',birth:'1978-11-30',cargo:'Coordenador Pedagógico',type:'Efetivo',email:'carlos.souza@educacao.itapipoca.ce.gov.br'}
+  ];
+  demoServers.forEach(s=>{s.id=uid();s.createdAt=new Date().toISOString();});
+  state.servers=demoServers;
+  addActivity('Sistema inicializado com dados de demonstração');
+  save();
+}
+</script>
+</body>
+</html>
